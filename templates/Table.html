@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block body %}
+    <div id="tableSection">
+        <h1>Table</h1>
+        <button onclick="downloadCSV()">Download CSV</button>
+
+        <h2>
+            <form>
+                <label for="nodeId">Select a NodeId:</label>
+                <select id="nodeId" name="nodeId" onchange="updateTable()">
+                    {% for group_name, node_ids in field_groups.items() %}
+                    {% for node_id in node_ids %}
+                    <option value="{{ node_id }}">{{ node_id }}</option>
+                    {% endfor %}
+                    {% endfor %}
+                </select>
+            </form>
+        </h2>
+
+        <table id="data-table">
+            <thead>
+                <tr>
+                    <th>NodeKey</th>
+                    <th>NodeId</th>
+                    <th>Value</th>
+                    <th>Datatype</th>
+                    <th>Size</th>
+                    <th>Quality</th>
+                    <th>SourceTimeStamp</th>
+                    <th>ServerTimeStamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td>{{ row['NodeKey'] }}</td>
+                    <td>{{ row['NodeId'] }}</td>
+                    <td>{{ row['Value'] }}</td>
+                    <td>{{ row['Datatype'] }}</td>
+                    <td>{{ row['Size'] }}</td>
+                    <td>{{ row['Quality'] }}</td>
+                    <td>{{ row['SourceTimeStamp'] }}</td>
+                    <td>{{ row['ServerTimeStamp'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+{% block script %}
+    <script>
+        // C: Need to break down this function, but need to fix the main one first
+        async function fetchData() {
+            try {
+                const nodeId = document.getElementById('nodeId').value;
+
+                // Fetch data from the server based on the selected NodeId
+                const response = await fetch(`/api/data?group=${nodeId}`);
+                const responseData = await response.json();
+                
+                // Update the table with the fetched data and filter rows by NodeId
+                updateTable(responseData.data, nodeId);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                // Handle errors
+            }
+        }
+        
+        // C: This function is fine I think
+        function updateTable() {
+            // request db data from server
+            const selectedNodeId = document.getElementById('nodeId').value;
+            let data = fetchDataGroup(selectedNodeId);
+            console.log('bruh:', data);
+
+            const tbody = document.getElementById('data-table').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+            
+            data.forEach(row => {
+                // Check if the row's NodeId matches the selected NodeId
+                if (row['NodeId'] === selectedNodeId) {
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                <td>${row.NodeKey}</td>
+                <td>${row.NodeId}</td>
+                <td>${row.Value}</td>
+                <td>${row.Datatype}</td>
+                <td>${row.Size}</td>
+                <td>${row.Quality}</td>
+                <td>${row.SourceTimeStamp}</td>
+                <td>${row.ServerTimeStamp}</td>
+            `;
+                    tbody.appendChild(newRow);
+                }
+            });
+        }
+    </script>
+{% endblock%}

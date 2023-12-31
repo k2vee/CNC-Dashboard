@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Include Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include JustGage library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+    <script src="https://cdn.rawgit.com/toorshia/justgage/1.4.0/dist/justgage.js"></script>
+    <!-- External javascript file -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+
+<body>
+    <div id="fieldGroups" data-groups='{{ field_groups | tojson | safe }}'></div>
+    <nav>
+        <ul>
+            <li><a href="Table">Table</a></li>
+            <li><a href="MotorCurrents">Motor Currents</a></li>
+            <li><a href="CycleCounts">Cycle Counts</a></li>
+            <li><a href="#">Motor Positions</a></li>
+            <li><a href="#">Remain Command</a></li>
+            <li><a href="#">Motor Dynamics</a></li>
+            <li><a href="#">Control Input/Output</a></li>
+            <li><a href="#">Custom</a></li>
+        </ul>
+    </nav>
+
+    <!-- C: Whar -->
+    <div id="contentSection" style="display: none;">
+        <!-- Content for different sections will be dynamically inserted here -->
+    </div>
+    {% block body %}
+    {% endblock %}
+    <script>
+        // some of these should be deprecated after fixing database queries
+        let globalData = [];
+        let currentValue = 0;
+        const currentChartId = 'currentChart';
+        const maxCurChartId = 'maxcurChart';
+        const cyccntChartId = 'cycleCountsChart';
+        const cycleCountChartId = 'cycleCountsSpindleChart'
+        let speedX = 0;
+        let speedY = 0;
+        let speedZ = 0;    
+    </script>
+    {% block script %}
+    {% endblock %}
+</body>

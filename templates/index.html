@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Include Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include JustGage library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+    <script src="https://cdn.rawgit.com/toorshia/justgage/1.4.0/dist/justgage.js"></script>
+    <!-- External javascript file -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+
+<body>
+    <!-- C: Le javascripte-->
+    <script>
+        // C: Not sure what to do with this one yet...
+        // C: Chart would be populate even if chart is not visible
+        document.addEventListener('DOMContentLoaded', function () {
+            fetchGroupData();
+            populateFilterOptions();
+            clearLineChart();
+        });
+
+        async function fetchGroupData() {
+            try {
+                const response = await fetch(`/api/data?group=${group}`);
+                globalData = await response.json();
+
+                if (globalData.length > 0) {
+                    updateLineChart(globalData);
+                    updateCurrentValues(globalData);
+                } else {
+                    clearLineChart();
+                }
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                clearLineChart();
+            }
+        }
+
+        // not used?
+        function createDatasets(data, motors, colors) {
+            console.log('All data:', data);
+
+            const datasets = [];
+
+            motors.forEach((motor, index) => {
+                // Filter data for the current motor
+                const motorData = data.filter(row => {
+                    const isMotor = isMotorNodeKey(row.NodeKey, motor);
+                    console.log(`Checking NodeKey ${row.NodeKey} for Motor ${motor}: ${isMotor}`);
+                    return isMotor;
+                });
+
+                console.log(`Filtered data for ${motor}:`, motorData);
+
+                if (motorData.length > 0) {
+                    datasets.push({
+                        label: `Motor ${motor}`,
+                        borderColor: colors[index],
+                        data: motorData.map(row => row.Value),
+                    });
+                } else {
+                    console.log(`No data found for ${motor}.`);
+                }
+            });
+
+            console.log('Final datasets:', datasets);
+
+            return datasets;
+        }
+        
+        // -- Not-table-page functions --
+        // Updates current values
+        // C: This thing doesn't work or something idk
+        // C: Update: It is inherently broke, I think
+        function updateCurrentValues(data) {
+            const currentValueX = globalData.data.find(row => row.NodeKey === 7)?.Value;
+            const currentValueY = globalData.data.find(row => row.NodeKey === 1)?.Value;
+            const currentValueZ = globalData.data.find(row => row.NodeKey === 5)?.Value;
+
+            document.getElementById('currentX').querySelector('.current-value').innerText = currentValueX;
+            document.getElementById('currentY').querySelector('.current-value').innerText = currentValueY;
+            document.getElementById('currentZ').querySelector('.current-value').innerText = currentValueZ;
+        }
+
+        // C: This thing also doesn't work I think
+        function updateCycleCountValues(data) {
+            const cycleCountValueSpindle = globalData.data.find(row => row.NodeKey === 43)?.Value || 0;
+            const CYCCNTX = globalData.data.find(row => row.NodeKey === 2)?.Value || 0;
+            const CYCCNTY = globalData.data.find(row => row.NodeKey === 3)?.Value || 0;
+            const CYCCNTZ = globalData.data.find(row => row.NodeKey === 4)?.Value || 0;
+            document.getElementById('cycleCountsSpindle').querySelector('.cycle-count-value').innerText = cycleCountValueSpindle;
+            document.getElementById('cycleCountsX').querySelector('.cycle-count-value').innerText = CYCCNTX;
+            document.getElementById('cycleCountsY').querySelector('.cycle-count-value').innerText = CYCCNTY;
+            document.getElementById('cycleCountsZ').querySelector('.cycle-count-value').innerText = CYCCNTZ;
+        }
+
+
+            // - Line chart functions -F 
+
+        /*    
+        function updateLineChart(data) {
+            // Ensure data is an array
+            if (!Array.isArray(data)) {
+                console.error('Invalid data format. Expected an array.');
+                return;
+            }
+
+            // Extract data for the chart
+            const labels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
+
+            // Log the data for debugging
+            console.log('All data:', data);
+
+            // Create datasets for 'Current' and 'MAXCUR' for each motor (X, Y, Z)
+            const currentData = data.filter(row => [7, 1, 5].includes(row.NodeKey));
+            const maxcurData = data.filter(row => [6, 8, 39, 40, 41, 42].includes(row.NodeKey));
+            const cyccntData = data.filter(row => [2, 3, 4].includes(row.NodeKey));
+            const cycleCountData = data.filter(row => [43].includes(row.NodeKey));
+
+            // Log the filtered data for debugging
+            console.log('Filtered currentData:', currentData);
+            console.log('Filtered maxcurData:', maxcurData);
+            console.log('Filtered cyccntData:', cyccntData);
+            console.log('Filtered cycleCountData:', cycleCountData);
+
+            // Create datasets for 'Current' for each motor (X, Y, Z)
+            const currentDatasets = createDatasets(currentData, ['X', 'Y', 'Z'], ['#FFC3A0', '#A0FFC3', '#A0C3FF']);
+
+            // Create datasets for 'MAXCUR' for each motor (X, Y, Z)
+            const maxcurDatasets = createDatasets(maxcurData, ['X', 'Y', 'Z'], ['#FF8C66', '#66FF8C', '#668CFF']);
+
+            // Create datasets for 'cyccnt' for each motor (X, Y, Z)
+            const cyccntDatasets = createDatasets(cyccntData, ['X', 'Y', 'Z'], ['#FFC3A0', '#A0FFC3', '#A0C3FF']);
+
+            // Create datasets for 'cyclecount' for each motor (spindle)
+            const cycleCountDatasets = createDatasets(cycleCountData, ['Spindle'], ['#FFC3A0']);
+
+            // Create line chart with datasets for 'Current'
+            createLineChart(currentChartId, labels, currentDatasets, 'Current');
+
+            // Create line chart with datasets for 'MAXCUR'
+            createLineChart(maxCurChartId, labels, maxcurDatasets, 'MAXCUR');
+
+            // Create line chart with datasets for 'cyccnt'
+            createLineChart(cyccntChartId, labels, cyccntDatasets, 'CYCCNT');
+
+            // Create line chart with datasets for 'cyclecount'
+            createLineChart(cycleCountChartId, labels, cycleCountDatasets, 'CycleCount');
+        }
+        */
+
+            // - Button functions -
+
+        
+
+
+            // - Gauge functions -
+        function clearGauges() {
+            // Remove existing gauges
+            const gaugeContainers = document.querySelectorAll('.gauge-container');
+            gaugeContainers.forEach(container => container.innerHTML = '');
+        }
+
+        function updateSpeedometer(title, value, containerId) {
+            // Create or update the speedometer gauge
+            new JustGage({
+                id: containerId,
+                value: value,
+                min: 0,
+                max: 100, // Set your maximum speed value
+                title: '', // Set title to an empty string
+                titleFontColor: '#fff', // Set title text color
+                label: 'RPM',
+                labelColor: '#fff', // Set the color of the label text
+                valueFontColor: '#fff', // Set the color of the numerical value
+
+                pointer: true, // Show the pointer
+                pointerOptions: {
+                    color: '#ff0000', // Customize pointer color
+                    length: 0.6, // Set the length of the pointer
+                    strokeWidth: 0.05, // Set the width of the pointer
+                },
+                levelColors: ['#ff0000', '#ffff00', '#00ff00'], // Define colors based on your preference
+                labelColor: '#fff', // Set the color of the label text
+                valueFontColor: '#fff', // Set the color of the numerical value
+            });
+
+            // Create a title element for the gauge and set its text
+            const titleElement = document.createElement('div');
+            titleElement.classList.add('gauge-title');
+            titleElement.innerText = title;
+
+            // Append the title element as the first child of the gauge container
+            const gaugeContainer = document.getElementById(containerId);
+            gaugeContainer.insertBefore(titleElement, gaugeContainer.firstChild);
+        }
+
+        function updateSpeedometerGauges(speedX, speedY, speedZ) {
+            // Update or create speedometer gauges with unique titles
+            updateSpeedometer('Motor X Speed', speedX, 'gauge-x');
+            updateSpeedometer('Motor Y Speed', speedY, 'gauge-y');
+            updateSpeedometer('Motor Z Speed', speedZ, 'gauge-z');
+        }
+
+        // Function to populate the filter dropdown with options and add event listener
+        // C: For gauge only?
+        function populateFilterOptions() {
+            const groupFilterSelect = document.getElementById('groupFilter');
+
+            // Add event listener to fetch data when group filter is changed
+            groupFilterSelect.addEventListener('change', function () {
+                // Fetch data based on the selected group
+                fetchGroupData();
+
+                // Show or hide gauges based on the selected group
+                const selectedGroup = groupFilterSelect.value;
+                const gaugeContainers = document.querySelectorAll('.gauge-container');
+
+                if (selectedGroup !== 'All' && selectedGroup !== 'Speed') {
+                    gaugeContainers.forEach(container => container.style.display = 'none');
+                } else {
+                    gaugeContainers.forEach(container => container.style.display = 'block');
+                }
+            });
+        }
+        
+        // Function to directly embed data in the table and update line chart
+        // async function fetchData(url) {
+        //     try {
+        //         const response = await fetch(url);
+        //         globalData = await response.json();
+
+        //         // Log the raw data received from the server for debugging
+        //         console.log('Raw data received:', globalData);
+
+        //         // Check if data is received before logging
+        //         if (globalData.data.length > 0) {
+        //             console.log('Received data:', globalData);
+        //             updateTable(globalData.data);
+        //             updateLineChart(globalData.data);
+
+        //             // Extract speed values for motors X, Y, and Z
+        //             speedX = globalData.data.find(row => row.NodeKey === 36)?.Value || 0;
+        //             speedY = globalData.data.find(row => row.NodeKey === 37)?.Value || 0;
+        //             speedZ = globalData.data.find(row => row.NodeKey === 38)?.Value || 0;
+
+        //             // Add this function to update current values
+        //             function updateCurrentValues(data) {
+        //                 const currentValueX = globalData.data.find(row => row.NodeKey === 7)?.Value;
+        //                 const currentValueY = globalData.data.find(row => row.NodeKey === 1)?.Value;
+        //                 const currentValueZ = globalData.data.find(row => row.NodeKey === 5)?.Value;
+
+        //                 document.getElementById('currentX').querySelector('.current-value').innerText = currentValueX;
+        //                 document.getElementById('currentY').querySelector('.current-value').innerText = currentValueY;
+        //                 document.getElementById('currentZ').querySelector('.current-value').innerText = currentValueZ;
+        //             }
+
+        //             function updateCycleCountValues(data) {
+        //                 const cycleCountValueSpindle = globalData.data.find(row => row.NodeKey === 43)?.Value || 0;
+        //                 const CYCCNTX = globalData.data.find(row => row.NodeKey === 2)?.Value || 0;
+        //                 const CYCCNTY = globalData.data.find(row => row.NodeKey === 3)?.Value || 0;
+        //                 const CYCCNTZ = globalData.data.find(row => row.NodeKey === 4)?.Value || 0;
+        //                 document.getElementById('cycleCountsSpindle').querySelector('.cycle-count-value').innerText = cycleCountValueSpindle;
+        //                 document.getElementById('cycleCountsX').querySelector('.cycle-count-value').innerText = CYCCNTX;
+        //                 document.getElementById('cycleCountsY').querySelector('.cycle-count-value').innerText = CYCCNTY;
+        //                 document.getElementById('cycleCountsZ').querySelector('.cycle-count-value').innerText = CYCCNTZ;
+        //             }
+
+
+        //             // Call this function after fetching and updating the data
+        //             updateCurrentValues(globalData.data);
+        //             updateCycleCountValues(globalData.data);
+
+        //         } else {
+        //             console.log('No data received.');
+        //             // If no data, clear the line chart
+        //             clearLineChart();
+        //         }
+        //     } catch (error) {
+        //         console.error('Error fetching data:', error);
+        //         // If there's an error, clear the line chart
+        //         clearLineChart();
+        //     }
+        // }
+    </script>
+</body>
+
+</html>

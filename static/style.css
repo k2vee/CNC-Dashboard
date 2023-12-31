@@ -1,0 +1,127 @@
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+    color: #333;
+    /* Header text color in dark mode */
+}
+
+/* Dark mode styling */
+body {
+    background-color: #333;
+    color: #fff;
+}
+
+/* Dark mode styling for dropdown */
+select {
+    background-color: #555;
+    color: #fff;
+    border: 1px solid #777;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+/* Dark mode styling for dropdown options */
+option {
+    background-color: #555;
+    color: #fff;
+}
+
+/* Style for buttons */
+button {
+    background-color: #23d66e;
+    /* Green background for selected button */
+    color: white;
+    /* White text color */
+}
+
+button:hover {
+    background-color: #88beeb;
+    /* Light blue background on hover */
+    color: black;
+    /* Black text color on hover */
+}
+
+/* Maintain the same size for both selected and unselected buttons */
+.selected-button,
+button {
+    padding: 15px 20px;
+    /* Adjust padding to set the button size */
+    font-size: 16px;
+    /* Adjust font size */
+    margin: 1%;
+    /* Add margin for spacing between buttons */
+}
+
+.graph-container {
+    display: flex;
+    justify-content: space-between;
+    width: 80vw;
+    /* Adjust the width as needed */
+    margin: 2% auto;
+}
+
+canvas {
+    min-width: 40vw;
+    min-height: 50vh;
+    width: 40vw;
+    height: 50vh;
+    display: block;
+}
+
+
+
+
+
+nav {
+    background-color: #333;
+    overflow: hidden;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+nav li {
+    float: left;
+}
+
+nav a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+nav a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+#groupFilterContainer {
+    margin: 20px;
+}
+
+.gauge-container {
+    display: none;
+}
+
+.gauge-title {
+    text-align: center;
+    margin-top: 15px;
+    /* Adjust the margin as needed */
+}
