@@ -1,10 +1,11 @@
 import sqlite3
 from flask import Flask, render_template, jsonify, request
+from markupsafe import escape
 
 app = Flask(__name__)
 
 # Path to your SQLite database file
-database_file = r'C:\Users\Capul\OneDrive\Polytechnic\Year 3\Semester 2\IE4004 - IEP\VSCode\motor_data\motor_data\5min run loop.dxpdb'
+database_file = r'5min run loop.dxpdb'
 
 def fetch_node_key_to_node_id_mapping():
     conn = sqlite3.connect(database_file)
@@ -162,38 +163,22 @@ def Table():
 @app.route('/MotorCurrents')
 def MotorCurrents():
     print("Accessed the '/MotorCurrents' route.")
-
-    # To resolve: This can be better optimized, don't have to fetch the entire db everytime
-    # Fetch values from the updated database
-    data = fetch_data_by_group('All')
-    # Fetch field groups from the database
-    field_groups = fetch_field_groups()
-    print("Data fetched. Rendering template.")
-
-    return render_template('MotorCurrents.html', data=data, field_groups=field_groups)
+    return render_template('MotorCurrents.html')
 
 @app.route('/CycleCounts')
 def CycleCounts():
     print("Accessed the '/CycleCounts' route.")
-    
-    # To resolve: This can be better optimized, don't have to fetch the entire db everytime
-    # Fetch values from the updated database
-    data = fetch_data_by_group('All')
-    # Fetch field groups from the database
-    field_groups = fetch_field_groups()
-    print("Data fetched. Rendering template.")
+    return render_template('CycleCounts.html')
 
-    return render_template('CycleCounts.html', data=data, field_groups=field_groups)
-
-@app.route('/api/data')
-def get_group_data():
+@app.route('/api/data/<group>')
+def get_group_data(group):
     print("Accessed the '/api/data' route.")
 
     # Get group parameter from the query string
-    group = request.args.get('group', 'All')
+    # group = request.args.get('group', 'All')
 
     # Fetch values from the updated database based on the selected group
-    data = fetch_data_by_group(group)
+    data = fetch_data_by_group(escape(group))
 
     # Fetch field groups from the database
     field_groups = fetch_field_groups()

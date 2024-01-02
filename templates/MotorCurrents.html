@@ -4,29 +4,23 @@
     <div id="motorCurrentsSection">
         <!-- Add this section to your HTML file -->
         <div id="motorSelectionButtons">
-            <button id="buttonX" class="motor-button selected-button" onclick="toggleMotorSelection('X')">Motor
-                X</button>
-            <button id="buttonY" class="motor-button selected-button" onclick="toggleMotorSelection('Y')">Motor
-                Y</button>
-            <button id="buttonZ" class="motor-button selected-button" onclick="toggleMotorSelection('Z')">Motor
-                Z</button>
+            <button id="buttonX" class="motor-button selected-button" onclick="toggleMotorSelection('X', data)">
+                Motor X</button>
+            <button id="buttonY" class="motor-button selected-button" onclick="toggleMotorSelection('Y', data)">
+                Motor Y</button>
+            <button id="buttonZ" class="motor-button selected-button" onclick="toggleMotorSelection('Z', data)">
+                Motor Z</button>
             <button id="buttonSpindle" class="motor-button selected-button"
-                onclick="toggleMotorSelection('Spindle')">Spindle</button>
+                onclick="toggleMotorSelection('Spindle', data)">Spindle</button>
         </div>
         <div id="currentValues">
             <h2>Motor Currents</h2>
-            <div id="currentX" class="current-panel">
-                <h3>Motor X</h3>
-                <p class="current-value">0</p>
-            </div>
-            <div id="currentY" class="current-panel">
-                <h3>Motor Y</h3>
-                <p class="current-value">0</p>
-            </div>
-            <div id="currentZ" class="current-panel">
-                <h3>Motor Z</h3>
-                <p class="current-value">0</p>
-            </div>
+            <h3>Motor X</h3>
+            <p id="latest-X">0</p>
+            <h3>Motor Y</h3>
+            <p id="latest-Y">0</p>
+            <h3>Motor Z</h3>
+            <p id="latest-Z">0</p>
         </div>
         <div id="currentGraphs" class="graph-container">
             <div class="chart-wrapper">
@@ -40,13 +34,12 @@
 {% endblock %}
 {% block script %}
     <script>
-        document.addEventListener('DOMContentLoaded', function ()   {
+        document.addEventListener('DOMContentLoaded', async function ()   {
             /*
             // Ideally, the data is already filtered server-side so the entire database isnt passed to client,
             // then the client has to filter it.
-            fetchGroupData('motorCurrents');
             */
-            filterUpdateCharts(fetchDataGroup('Motor Currents').data);
+            filterUpdateCharts(await fetchDataGroup('Currents'));
         });
 
         // Function to update the 'Current' and 'MAXCUR' line chart
@@ -55,7 +48,7 @@
             const currentData = data.filter(row => [7, 1, 5].includes(row.NodeKey));
             const currentDatasets = createDatasets(currentData, ['X', 'Y', 'Z'], ['#FFC3A0', '#A0FFC3', '#A0C3FF']);
             // Create line chart with datasets for 'Current'
-            createLineChart(currentChartId, currentlabels, currentDatasets, 'Current');
+            createLineChart(currentChartId, currentLabels, currentDatasets, 'Current');
 
             const maxCurlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
             const maxCurData = data.filter(row => [6, 8, 39, 40, 41, 42].includes(row.NodeKey));

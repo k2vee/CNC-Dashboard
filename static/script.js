@@ -1,9 +1,12 @@
 // Pass the group of data requested and returns it
-function fetchDataGroup(group)    {
-    const response = fetch(`/api/data?group=${group}`);
-    let data = response.json();
-
-    return(data.data);
+async function fetchDataGroup(group)    {
+    try{
+        const response = await fetch(`/api/data?group=${group}`);
+        const data = await response.json();
+        return(data.data);
+    }   catch(error)    {
+        console.log(`Error fetching ${group} data:`, error);
+    }
 }
 
 async function fetchData()  {
@@ -33,6 +36,39 @@ async function showCycleCounts()    {
     // Update the current values with the selected data
     const selectedData = getSelectedData();
     updateCycleCountValues(selectedData);
+}
+
+// -- Chart functions --
+// C: Creates ??datasets??
+function createDatasets(data, motors, colors) {
+    console.log('All data:', data);
+
+    const datasets = [];
+
+    motors.forEach((motor, index) => {
+        // Filter data for the current motor
+        const motorData = data.filter(row => {
+            const isMotor = isMotorNodeKey(row.NodeKey, motor);
+            console.log(`Checking NodeKey ${row.NodeKey} for Motor ${motor}: ${isMotor}`);
+            return isMotor;
+        });
+
+        console.log(`Filtered data for ${motor}:`, motorData);
+
+        if (motorData.length > 0) {
+            datasets.push({
+                label: `Motor ${motor}`,
+                borderColor: colors[index],
+                data: motorData.map(row => row.Value),
+            });
+        } else {
+            console.log(`No data found for ${motor}.`);
+        }
+    });
+
+    console.log('Final datasets:', datasets);
+
+    return datasets;
 }
 
 // Function to update the line chart with data
@@ -95,7 +131,7 @@ function createLineChart(canvasId, labels, datasets, chartTitle) {
     });
 }
 
-// C: this function creates the line chart??
+// Function that destroys current chart and creates a new one
 function updateLineChart(data) {
     // Get the canvas element
     const canvas = document.getElementById('line-chart');
@@ -270,38 +306,28 @@ function downloadCSV() {
     document.body.removeChild(link);
 }
 
-// TBC
-
-// Function to toggle the button styles and update the chart
-function toggleButton(motor) {
-    const button = document.getElementById(`button${motor}`);
-    button.classList.toggle('selected-button');
-
-    // Update the chart
-    updateLineChart(getSelectedData());
-}
-
+// -- Filtering Functions --
 // Function to toggle motor selection
-function toggleMotorSelection(motor) {
+function toggleMotorSelection(motor, data) {
     const button = document.getElementById(`button${motor}`);
     button.classList.toggle('selected-button');
 
     // Update the line chart with the selected data
-    const selectedData = getSelectedData();
-    // updateCurrentValues(selectedData);
-    updateCycleCountValues(selectedData);
+    const selectedData = getSelectedData(data);
+    // updateCurrentValues(selectedData);       <-
+    // updateCycleCountValues(selectedData);    <- simplify and break up function so that it is applicable for all chart pages
     updateLineChart(selectedData);
 }
 
 // Function to get selected data based on button states
-function getSelectedData() {
+function getSelectedData(data) {
     const selectedMotors = ['X', 'Y', 'Z', 'Spindle'].filter(motor => {
         const button = document.getElementById(`button${motor}`);
         return button.classList.contains('selected-button');
     });
 
     // Filter data based on selected motors
-    const selectedData = globalData.data.filter(row => {
+    const selectedData = data.filter(row => {
         return selectedMotors.some(motor => isMotorNodeKey(row.NodeKey, motor));
     });
 
@@ -322,4 +348,39 @@ function isMotorNodeKey(nodeKey, motor) {
     }
 
     return false;
+}
+
+// -- TBC --
+function updateCurrentValues(data) {
+    const currentValueX = globalData.data.find(row => row.NodeKey === 7)?.Value;
+    const currentValueY = globalData.data.find(row => row.NodeKey === 1)?.Value;
+    const currentValueZ = globalData.data.find(row => row.NodeKey === 5)?.Value;
+
+    document.getElementById('currentX').querySelector('.current-value').innerText = currentValueX;
+    document.getElementById('currentY').querySelector('.current-value').innerText = currentValueY;
+    document.getElementById('currentZ').querySelector('.current-value').innerText = currentValueZ;
+}
+
+// C: This thing also doesn't work I think
+function updateCycleCountValues(data) {
+    const cycleCountValueSpindle = globalData.data.find(row => row.NodeKey === 43)?.Value || 0;
+    const CYCCNTX = globalData.data.find(row => row.NodeKey === 2)?.Value || 0;
+    const CYCCNTY = globalData.data.find(row => row.NodeKey === 3)?.Value || 0;
+    const CYCCNTZ = globalData.data.find(row => row.NodeKey === 4)?.Value || 0;
+    document.getElementById('cycleCountsSpindle').querySelector('.cycle-count-value').innerText = cycleCountValueSpindle;
+    document.getElementById('cycleCountsX').querySelector('.cycle-count-value').innerText = CYCCNTX;
+    document.getElementById('cycleCountsY').querySelector('.cycle-count-value').innerText = CYCCNTY;
+    document.getElementById('cycleCountsZ').querySelector('.cycle-count-value').innerText = CYCCNTZ;
+}
+
+function updateLatestValues(data)   {
+    const spindleNewVal = data.find();
+    const XNewVal = 0;
+    const YNewVal = 0;
+    const ZNewVal = 0;
+
+    document.getElementById('latest-Spindle').innerText = cycleCountValueSpindle;
+    document.getElementById('latest-X').innerText = CYCCNTX;
+    document.getElementById('latest-Y').innerText = CYCCNTY;
+    document.getElementById('latest-Z').innerText = CYCCNTZ;
 }

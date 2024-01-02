@@ -1,0 +1,480 @@
+warning: LF will be replaced by CRLF in app.py.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in templates/index.html.
+The file will have its original line endings in your working directory
+[1mdiff --git a/app.py b/app.py[m
+[1mindex 7418846..cd2e670 100644[m
+[1m--- a/app.py[m
+[1m+++ b/app.py[m
+[36m@@ -1,10 +1,11 @@[m
+ import sqlite3[m
+ from flask import Flask, render_template, jsonify, request[m
+[32m+[m[32mfrom markupsafe import escape[m
+ [m
+ app = Flask(__name__)[m
+ [m
+ # Path to your SQLite database file[m
+[31m-database_file = r'C:\Users\Capul\OneDrive\Polytechnic\Year 3\Semester 2\IE4004 - IEP\VSCode\motor_data\motor_data\5min run loop.dxpdb'[m
+[32m+[m[32mdatabase_file = r'5min run loop.dxpdb'[m
+ [m
+ def fetch_node_key_to_node_id_mapping():[m
+     conn = sqlite3.connect(database_file)[m
+[36m@@ -162,38 +163,22 @@[m [mdef Table():[m
+ @app.route('/MotorCurrents')[m
+ def MotorCurrents():[m
+     print("Accessed the '/MotorCurrents' route.")[m
+[31m-[m
+[31m-    # To resolve: This can be better optimized, don't have to fetch the entire db everytime[m
+[31m-    # Fetch values from the updated database[m
+[31m-    data = fetch_data_by_group('All')[m
+[31m-    # Fetch field groups from the database[m
+[31m-    field_groups = fetch_field_groups()[m
+[31m-    print("Data fetched. Rendering template.")[m
+[31m-[m
+[31m-    return render_template('MotorCurrents.html', data=data, field_groups=field_groups)[m
+[32m+[m[32m    return render_template('MotorCurrents.html')[m
+ [m
+ @app.route('/CycleCounts')[m
+ def CycleCounts():[m
+     print("Accessed the '/CycleCounts' route.")[m
+[31m-    [m
+[31m-    # To resolve: This can be better optimized, don't have to fetch the entire db everytime[m
+[31m-    # Fetch values from the updated database[m
+[31m-    data = fetch_data_by_group('All')[m
+[31m-    # Fetch field groups from the database[m
+[31m-    field_groups = fetch_field_groups()[m
+[31m-    print("Data fetched. Rendering template.")[m
+[31m-[m
+[31m-    return render_template('CycleCounts.html', data=data, field_groups=field_groups)[m
+[32m+[m[32m    return render_template('CycleCounts.html')[m
+ [m
+[31m-@app.route('/api/data')[m
+[31m-def get_group_data():[m
+[32m+[m[32m@app.route('/api/data/<group>')[m
+[32m+[m[32mdef get_group_data(group):[m
+     print("Accessed the '/api/data' route.")[m
+ [m
+     # Get group parameter from the query string[m
+[31m-    group = request.args.get('group', 'All')[m
+[32m+[m[32m    # group = request.args.get('group', 'All')[m
+ [m
+     # Fetch values from the updated database based on the selected group[m
+[31m-    data = fetch_data_by_group(group)[m
+[32m+[m[32m    data = fetch_data_by_group(escape(group))[m
+ [m
+     # Fetch field groups from the database[m
+     field_groups = fetch_field_groups()[m
+[1mdiff --git a/static/script.js b/static/script.js[m
+[1mindex 091fa3d..62b866f 100644[m
+[1m--- a/static/script.js[m
+[1m+++ b/static/script.js[m
+[36m@@ -1,9 +1,12 @@[m
+ // Pass the group of data requested and returns it[m
+[31m-function fetchDataGroup(group)    {[m
+[31m-    const response = fetch(`/api/data?group=${group}`);[m
+[31m-    let data = response.json();[m
+[31m-[m
+[31m-    return(data.data);[m
+[32m+[m[32masync function fetchDataGroup(group)    {[m
+[32m+[m[32m    try{[m
+[32m+[m[32m        const response = await fetch(`/api/data?group=${group}`);[m
+[32m+[m[32m        const data = await response.json();[m
+[32m+[m[32m        return(data.data);[m
+[32m+[m[32m    }   catch(error)    {[m
+[32m+[m[32m        console.log(`Error fetching ${group} data:`, error);[m
+[32m+[m[32m    }[m
+ }[m
+ [m
+ async function fetchData()  {[m
+[36m@@ -35,6 +38,39 @@[m [masync function showCycleCounts()    {[m
+     updateCycleCountValues(selectedData);[m
+ }[m
+ [m
+[32m+[m[32m// -- Chart functions --[m
+[32m+[m[32m// C: Creates ??datasets??[m
+[32m+[m[32mfunction createDatasets(data, motors, colors) {[m
+[32m+[m[32m    console.log('All data:', data);[m
+[32m+[m
+[32m+[m[32m    const datasets = [];[m
+[32m+[m
+[32m+[m[32m    motors.forEach((motor, index) => {[m
+[32m+[m[32m        // Filter data for the current motor[m
+[32m+[m[32m        const motorData = data.filter(row => {[m
+[32m+[m[32m            const isMotor = isMotorNodeKey(row.NodeKey, motor);[m
+[32m+[m[32m            console.log(`Checking NodeKey ${row.NodeKey} for Motor ${motor}: ${isMotor}`);[m
+[32m+[m[32m            return isMotor;[m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m        console.log(`Filtered data for ${motor}:`, motorData);[m
+[32m+[m
+[32m+[m[32m        if (motorData.length > 0) {[m
+[32m+[m[32m            datasets.push({[m
+[32m+[m[32m                label: `Motor ${motor}`,[m
+[32m+[m[32m                borderColor: colors[index],[m
+[32m+[m[32m                data: motorData.map(row => row.Value),[m
+[32m+[m[32m            });[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            console.log(`No data found for ${motor}.`);[m
+[32m+[m[32m        }[m
+[32m+[m[32m    });[m
+[32m+[m
+[32m+[m[32m    console.log('Final datasets:', datasets);[m
+[32m+[m
+[32m+[m[32m    return datasets;[m
+[32m+[m[32m}[m
+[32m+[m
+ // Function to update the line chart with data[m
+ function createLineChart(canvasId, labels, datasets, chartTitle) {[m
+     const canvas = document.getElementById(canvasId);[m
+[36m@@ -95,7 +131,7 @@[m [mfunction createLineChart(canvasId, labels, datasets, chartTitle) {[m
+     });[m
+ }[m
+ [m
+[31m-// C: this function creates the line chart??[m
+[32m+[m[32m// Function that destroys current chart and creates a new one[m
+ function updateLineChart(data) {[m
+     // Get the canvas element[m
+     const canvas = document.getElementById('line-chart');[m
+[36m@@ -270,38 +306,28 @@[m [mfunction downloadCSV() {[m
+     document.body.removeChild(link);[m
+ }[m
+ [m
+[31m-// TBC[m
+[31m-[m
+[31m-// Function to toggle the button styles and update the chart[m
+[31m-function toggleButton(motor) {[m
+[31m-    const button = document.getElementById(`button${motor}`);[m
+[31m-    button.classList.toggle('selected-button');[m
+[31m-[m
+[31m-    // Update the chart[m
+[31m-    updateLineChart(getSelectedData());[m
+[31m-}[m
+[31m-[m
+[32m+[m[32m// -- Filtering Functions --[m
+ // Function to toggle motor selection[m
+[31m-function toggleMotorSelection(motor) {[m
+[32m+[m[32mfunction toggleMotorSelection(motor, data) {[m
+     const button = document.getElementById(`button${motor}`);[m
+     button.classList.toggle('selected-button');[m
+ [m
+     // Update the line chart with the selected data[m
+[31m-    const selectedData = getSelectedData();[m
+[31m-    // updateCurrentValues(selectedData);[m
+[31m-    updateCycleCountValues(selectedData);[m
+[32m+[m[32m    const selectedData = getSelectedData(data);[m
+[32m+[m[32m    // updateCurrentValues(selectedData);       <-[m
+[32m+[m[32m    // updateCycleCountValues(selectedData);    <- simplify and break up function so that it is applicable for all chart pages[m
+     updateLineChart(selectedData);[m
+ }[m
+ [m
+ // Function to get selected data based on button states[m
+[31m-function getSelectedData() {[m
+[32m+[m[32mfunction getSelectedData(data) {[m
+     const selectedMotors = ['X', 'Y', 'Z', 'Spindle'].filter(motor => {[m
+         const button = document.getElementById(`button${motor}`);[m
+         return button.classList.contains('selected-button');[m
+     });[m
+ [m
+     // Filter data based on selected motors[m
+[31m-    const selectedData = globalData.data.filter(row => {[m
+[32m+[m[32m    const selectedData = data.filter(row => {[m
+         return selectedMotors.some(motor => isMotorNodeKey(row.NodeKey, motor));[m
+     });[m
+ [m
+[36m@@ -322,4 +348,39 @@[m [mfunction isMotorNodeKey(nodeKey, motor) {[m
+     }[m
+ [m
+     return false;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// -- TBC --[m
+[32m+[m[32mfunction updateCurrentValues(data) {[m
+[32m+[m[32m    const currentValueX = globalData.data.find(row => row.NodeKey === 7)?.Value;[m
+[32m+[m[32m    const currentValueY = globalData.data.find(row => row.NodeKey === 1)?.Value;[m
+[32m+[m[32m    const currentValueZ = globalData.data.find(row => row.NodeKey === 5)?.Value;[m
+[32m+[m
+[32m+[m[32m    document.getElementById('currentX').querySelector('.current-value').innerText = currentValueX;[m
+[32m+[m[32m    document.getElementById('currentY').querySelector('.current-value').innerText = currentValueY;[m
+[32m+[m[32m    document.getElementById('currentZ').querySelector('.current-value').innerText = currentValueZ;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// C: This thing also doesn't work I think[m
+[32m+[m[32mfunction updateCycleCountValues(data) {[m
+[32m+[m[32m    const cycleCountValueSpindle = globalData.data.find(row => row.NodeKey === 43)?.Value || 0;[m
+[32m+[m[32m    const CYCCNTX = globalData.data.find(row => row.NodeKey === 2)?.Value || 0;[m
+[32m+[m[32m    const CYCCNTY = globalData.data.find(row => row.NodeKey === 3)?.Value || 0;[m
+[32m+[m[32m    const CYCCNTZ = globalData.data.find(row => row.NodeKey === 4)?.Value || 0;[m
+[32m+[m[32m    document.getElementById('cycleCountsSpindle').querySelector('.cycle-count-value').innerText = cycleCountValueSpindle;[m
+[32m+[m[32m    document.getElementById('cycleCountsX').querySelector('.cycle-count-value').innerText = CYCCNTX;[m
+[32m+[m[32m    document.getElementById('cycleCountsY').querySelector('.cycle-count-value').innerText = CYCCNTY;[m
+[32m+[m[32m    document.getElementById('cycleCountsZ').querySelector('.cycle-count-value').innerText = CYCCNTZ;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mfunction updateLatestValues(data)   {[m
+[32m+[m[32m    const spindleNewVal = data.find();[m
+[32m+[m[32m    const XNewVal = 0;[m
+[32m+[m[32m    const YNewVal = 0;[m
+[32m+[m[32m    const ZNewVal = 0;[m
+[32m+[m
+[32m+[m[32m    document.getElementById('latest-Spindle').innerText = cycleCountValueSpindle;[m
+[32m+[m[32m    document.getElementById('latest-X').innerText = CYCCNTX;[m
+[32m+[m[32m    document.getElementById('latest-Y').innerText = CYCCNTY;[m
+[32m+[m[32m    document.getElementById('latest-Z').innerText = CYCCNTZ;[m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/templates/CycleCounts.html b/templates/CycleCounts.html[m
+[1mindex aad7397..9826223 100644[m
+[1m--- a/templates/CycleCounts.html[m
+[1m+++ b/templates/CycleCounts.html[m
+[36m@@ -1,13 +1,12 @@[m
+ {% extends 'base.html' %}[m
+ {% block body %}[m
+     <!-- To resolve: dependency on 'toggleMotorSelection'-->[m
+[31m-    <div id="cycleCountsSection">[m
+     <div id="motorSelectionButtons">[m
+[31m-        <button id="buttonX" class="motor-button selected-button" onclick="toggleMotorSelection('X')">Motor[m
+[32m+[m[32m        <button id="buttonX" class="motor-button selected-button" onclick="toggleMotorSelection('X', data)">Motor[m
+             X</button>[m
+[31m-        <button id="buttonY" class="motor-button selected-button" onclick="toggleMotorSelection('Y')">Motor[m
+[32m+[m[32m        <button id="buttonY" class="motor-button selected-button" onclick="toggleMotorSelection('Y', data)">Motor[m
+             Y</button>[m
+[31m-        <button id="buttonZ" class="motor-button selected-button" onclick="toggleMotorSelection('Z')">Motor[m
+[32m+[m[32m        <button id="buttonZ" class="motor-button selected-button" onclick="toggleMotorSelection('Z', data)">Motor[m
+             Z</button>[m
+         <button id="buttonSpindle" class="motor-button selected-button"[m
+             onclick="toggleMotorSelection('Spindle')">Spindle</button>[m
+[36m@@ -39,17 +38,15 @@[m
+             <canvas id="cycleCountsSpindleChart" width="40%" height="40%"></canvas>[m
+         </div>[m
+     </div>[m
+[31m-    </div>[m
+ {% endblock %}[m
+ {% block script %}[m
+     <script>[m
+[31m-        document.addEventListener('DOMContentLoaded', function()    {[m
+[32m+[m[32m        document.addEventListener('DOMContentLoaded', async function()    {[m
+             /*[m
+             // Ideally, the data is already filtered server-side so the entire database isnt passed to client,[m
+             // then the client has to filter it.[m
+[31m-            fetchGroupData('cycleCountCurrents');[m
+             */[m
+[31m-            filterUpdateCharts('{{data}}');[m
+[32m+[m[32m            filterUpdateCharts(await fetchDataGroup('This doesnt work yet'));[m
+         })[m
+         // Function to update the 'CYCCNT' line chart[m
+         function filterUpdateCharts(data) {[m
+[1mdiff --git a/templates/MotorCurrents.html b/templates/MotorCurrents.html[m
+[1mindex f56f425..8421e18 100644[m
+[1m--- a/templates/MotorCurrents.html[m
+[1m+++ b/templates/MotorCurrents.html[m
+[36m@@ -4,29 +4,23 @@[m
+     <div id="motorCurrentsSection">[m
+         <!-- Add this section to your HTML file -->[m
+         <div id="motorSelectionButtons">[m
+[31m-            <button id="buttonX" class="motor-button selected-button" onclick="toggleMotorSelection('X')">Motor[m
+[31m-                X</button>[m
+[31m-            <button id="buttonY" class="motor-button selected-button" onclick="toggleMotorSelection('Y')">Motor[m
+[31m-                Y</button>[m
+[31m-            <button id="buttonZ" class="motor-button selected-button" onclick="toggleMotorSelection('Z')">Motor[m
+[31m-                Z</button>[m
+[32m+[m[32m            <button id="buttonX" class="motor-button selected-button" onclick="toggleMotorSelection('X', data)">[m
+[32m+[m[32m                Motor X</button>[m
+[32m+[m[32m            <button id="buttonY" class="motor-button selected-button" onclick="toggleMotorSelection('Y', data)">[m
+[32m+[m[32m                Motor Y</button>[m
+[32m+[m[32m            <button id="buttonZ" class="motor-button selected-button" onclick="toggleMotorSelection('Z', data)">[m
+[32m+[m[32m                Motor Z</button>[m
+             <button id="buttonSpindle" class="motor-button selected-button"[m
+[31m-                onclick="toggleMotorSelection('Spindle')">Spindle</button>[m
+[32m+[m[32m                onclick="toggleMotorSelection('Spindle', data)">Spindle</button>[m
+         </div>[m
+         <div id="currentValues">[m
+             <h2>Motor Currents</h2>[m
+[31m-            <div id="currentX" class="current-panel">[m
+[31m-                <h3>Motor X</h3>[m
+[31m-                <p class="current-value">0</p>[m
+[31m-            </div>[m
+[31m-            <div id="currentY" class="current-panel">[m
+[31m-                <h3>Motor Y</h3>[m
+[31m-                <p class="current-value">0</p>[m
+[31m-            </div>[m
+[31m-            <div id="currentZ" class="current-panel">[m
+[31m-                <h3>Motor Z</h3>[m
+[31m-                <p class="current-value">0</p>[m
+[31m-            </div>[m
+[32m+[m[32m            <h3>Motor X</h3>[m
+[32m+[m[32m            <p id="latest-X">0</p>[m
+[32m+[m[32m            <h3>Motor Y</h3>[m
+[32m+[m[32m            <p id="latest-Y">0</p>[m
+[32m+[m[32m            <h3>Motor Z</h3>[m
+[32m+[m[32m            <p id="latest-Z">0</p>[m
+         </div>[m
+         <div id="currentGraphs" class="graph-container">[m
+             <div class="chart-wrapper">[m
+[36m@@ -40,13 +34,12 @@[m
+ {% endblock %}[m
+ {% block script %}[m
+     <script>[m
+[31m-        document.addEventListener('DOMContentLoaded', function ()   {[m
+[32m+[m[32m        document.addEventListener('DOMContentLoaded', async function ()   {[m
+             /*[m
+             // Ideally, the data is already filtered server-side so the entire database isnt passed to client,[m
+             // then the client has to filter it.[m
+[31m-            fetchGroupData('motorCurrents');[m
+             */[m
+[31m-            filterUpdateCharts(fetchDataGroup('Motor Currents').data);[m
+[32m+[m[32m            filterUpdateCharts(await fetchDataGroup('Currents'));[m
+         });[m
+ [m
+         // Function to update the 'Current' and 'MAXCUR' line chart[m
+[36m@@ -55,7 +48,7 @@[m
+             const currentData = data.filter(row => [7, 1, 5].includes(row.NodeKey));[m
+             const currentDatasets = createDatasets(currentData, ['X', 'Y', 'Z'], ['#FFC3A0', '#A0FFC3', '#A0C3FF']);[m
+             // Create line chart with datasets for 'Current'[m
+[31m-            createLineChart(currentChartId, currentlabels, currentDatasets, 'Current');[m
+[32m+[m[32m            createLineChart(currentChartId, currentLabels, currentDatasets, 'Current');[m
+ [m
+             const maxCurlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values[m
+             const maxCurData = data.filter(row => [6, 8, 39, 40, 41, 42].includes(row.NodeKey));[m
+[1mdiff --git a/templates/Table.html b/templates/Table.html[m
+[1mindex eb5e8c7..517b1cc 100644[m
+[1m--- a/templates/Table.html[m
+[1m+++ b/templates/Table.html[m
+[36m@@ -48,30 +48,12 @@[m
+     </div>[m
+ {% endblock %}[m
+ {% block script %}[m
+[31m-    <script>[m
+[31m-        // C: Need to break down this function, but need to fix the main one first[m
+[31m-        async function fetchData() {[m
+[31m-            try {[m
+[31m-                const nodeId = document.getElementById('nodeId').value;[m
+[31m-[m
+[31m-                // Fetch data from the server based on the selected NodeId[m
+[31m-                const response = await fetch(`/api/data?group=${nodeId}`);[m
+[31m-                const responseData = await response.json();[m
+[31m-                [m
+[31m-                // Update the table with the fetched data and filter rows by NodeId[m
+[31m-                updateTable(responseData.data, nodeId);[m
+[31m-            } catch (error) {[m
+[31m-                console.error('Error fetching data:', error);[m
+[31m-                // Handle errors[m
+[31m-            }[m
+[31m-        }[m
+[31m-        [m
+[32m+[m[32m    <script>[m[41m        [m
+         // C: This function is fine I think[m
+[31m-        function updateTable() {[m
+[32m+[m[32m        async function updateTable() {[m
+             // request db data from server[m
+             const selectedNodeId = document.getElementById('nodeId').value;[m
+[31m-            let data = fetchDataGroup(selectedNodeId);[m
+[31m-            console.log('bruh:', data);[m
+[32m+[m[32m            const data = await fetchDataGroup(selectedNodeId);[m
+ [m
+             const tbody = document.getElementById('data-table').getElementsByTagName('tbody')[0];[m
+             tbody.innerHTML = '';[m
+[1mdiff --git a/templates/base.html b/templates/base.html[m
+[1mindex a82b00f..8ca9d41 100644[m
+[1m--- a/templates/base.html[m
+[1m+++ b/templates/base.html[m
+[36m@@ -17,7 +17,6 @@[m
+ </head>[m
+ [m
+ <body>[m
+[31m-    <div id="fieldGroups" data-groups='{{ field_groups | tojson | safe }}'></div>[m
+     <nav>[m
+         <ul>[m
+             <li><a href="Table">Table</a></li>[m
+[36m@@ -39,15 +38,15 @@[m
+     {% endblock %}[m
+     <script>[m
+         // some of these should be deprecated after fixing database queries[m
+[31m-        let globalData = [];[m
+[31m-        let currentValue = 0;[m
+[32m+[m[32m        // let globalData = [];[m
+[32m+[m[32m        // let currentValue = 0;[m
+         const currentChartId = 'currentChart';[m
+         const maxCurChartId = 'maxcurChart';[m
+         const cyccntChartId = 'cycleCountsChart';[m
+[31m-        const cycleCountChartId = 'cycleCountsSpindleChart'[m
+[31m-        let speedX = 0;[m
+[31m-        let speedY = 0;[m
+[31m-        let speedZ = 0;    [m
+[32m+[m[32m        const cycleCountChartId = 'cycleCountsSpindleChart';[m
+[32m+[m[32m        // let speedX = 0;[m
+[32m+[m[32m        // let speedY = 0;[m
+[32m+[m[32m        // let speedZ = 0;[m[41m    [m
+     </script>[m
+     {% block script %}[m
+     {% endblock %}[m
+[1mdiff --git a/templates/index.html b/templates/index.html[m
+[1mindex 05a970b..83988c2 100644[m
+[1m--- a/templates/index.html[m
+[1m+++ b/templates/index.html[m
+[36m@@ -26,56 +26,6 @@[m
+             populateFilterOptions();[m
+             clearLineChart();[m
+         });[m
+[31m-[m
+[31m-        async function fetchGroupData() {[m
+[31m-            try {[m
+[31m-                const response = await fetch(`/api/data?group=${group}`);[m
+[31m-                globalData = await response.json();[m
+[31m-[m
+[31m-                if (globalData.length > 0) {[m
+[31m-                    updateLineChart(globalData);[m
+[31m-                    updateCurrentValues(globalData);[m
+[31m-                } else {[m
+[31m-                    clearLineChart();[m
+[31m-                }[m
+[31m-[m
+[31m-            } catch (error) {[m
+[31m-                console.error('Error fetching data:', error);[m
+[31m-                clearLineChart();[m
+[31m-            }[m
+[31m-        }[m
+[31m-[m
+[31m-        // not used?[m
+[31m-        function createDatasets(data, motors, colors) {[m
+[31m-            console.log('All data:', data);[m
+[31m-[m
+[31m-            const datasets = [];[m
+[31m-[m
+[31m-            motors.forEach((motor, index) => {[m
+[31m-                // Filter data for the current motor[m
+[31m-                const motorData = data.filter(row => {[m
+[31m-                    const isMotor = isMotorNodeKey(row.NodeKey, motor);[m
+[31m-                    console.log(`Checking NodeKey ${row.NodeKey} for Motor ${motor}: ${isMotor}`);[m
+[31m-                    return isMotor;[m
+[31m-                });[m
+[31m-[m
+[31m-                console.log(`Filtered data for ${motor}:`, motorData);[m
+[31m-[m
+[31m-                if (motorData.length > 0) {[m
+[31m-                    datasets.push({[m
+[31m-                        label: `Motor ${motor}`,[m
+[31m-                        borderColor: colors[index],[m
+[31m-                        data: motorData.map(row => row.Value),[m
+[31m-                    });[m
+[31m-                } else {[m
+[31m-                    console.log(`No data found for ${motor}.`);[m
+[31m-                }[m
+[31m-            });[m
+[31m-[m
+[31m-            console.log('Final datasets:', datasets);[m
+[31m-[m
+[31m-            return datasets;[m
+[31m-        }[m
+         [m
+         // -- Not-table-page functions --[m
+         // Updates current values[m
+[36m@@ -103,9 +53,6 @@[m
+             document.getElementById('cycleCountsZ').querySelector('.cycle-count-value').innerText = CYCCNTZ;[m
+         }[m
+ [m
+[31m-[m
+[31m-            // - Line chart functions -F [m
+[31m-[m
+         /*    [m
+         function updateLineChart(data) {[m
+             // Ensure data is an array[m

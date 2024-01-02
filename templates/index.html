@@ -26,56 +26,6 @@
             populateFilterOptions();
             clearLineChart();
         });
-
-        async function fetchGroupData() {
-            try {
-                const response = await fetch(`/api/data?group=${group}`);
-                globalData = await response.json();
-
-                if (globalData.length > 0) {
-                    updateLineChart(globalData);
-                    updateCurrentValues(globalData);
-                } else {
-                    clearLineChart();
-                }
-
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                clearLineChart();
-            }
-        }
-
-        // not used?
-        function createDatasets(data, motors, colors) {
-            console.log('All data:', data);
-
-            const datasets = [];
-
-            motors.forEach((motor, index) => {
-                // Filter data for the current motor
-                const motorData = data.filter(row => {
-                    const isMotor = isMotorNodeKey(row.NodeKey, motor);
-                    console.log(`Checking NodeKey ${row.NodeKey} for Motor ${motor}: ${isMotor}`);
-                    return isMotor;
-                });
-
-                console.log(`Filtered data for ${motor}:`, motorData);
-
-                if (motorData.length > 0) {
-                    datasets.push({
-                        label: `Motor ${motor}`,
-                        borderColor: colors[index],
-                        data: motorData.map(row => row.Value),
-                    });
-                } else {
-                    console.log(`No data found for ${motor}.`);
-                }
-            });
-
-            console.log('Final datasets:', datasets);
-
-            return datasets;
-        }
         
         // -- Not-table-page functions --
         // Updates current values
@@ -102,9 +52,6 @@
             document.getElementById('cycleCountsY').querySelector('.cycle-count-value').innerText = CYCCNTY;
             document.getElementById('cycleCountsZ').querySelector('.cycle-count-value').innerText = CYCCNTZ;
         }
-
-
-            // - Line chart functions -F 
 
         /*    
         function updateLineChart(data) {
