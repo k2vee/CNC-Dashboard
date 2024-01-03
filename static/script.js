@@ -9,13 +9,6 @@ async function fetchDataGroup(group)    {
     }
 }
 
-async function fetchData()  {
-    const response = await fetch(`/api/data?group=All`);
-    data = await response.json();
-
-    return data;
-}
-
 /* To resolve
     : - Where 'getSelectedData' and 'updateCurrentValues' come into the picture when loading pages
     : - Dead function

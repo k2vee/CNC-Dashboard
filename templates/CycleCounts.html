@@ -1,34 +1,25 @@
 {% extends 'base.html' %}
 {% block body %}
-    <!-- To resolve: dependency on 'toggleMotorSelection'-->
     <div id="motorSelectionButtons">
-        <button id="buttonX" class="motor-button selected-button" onclick="toggleMotorSelection('X', data)">Motor
-            X</button>
-        <button id="buttonY" class="motor-button selected-button" onclick="toggleMotorSelection('Y', data)">Motor
-            Y</button>
-        <button id="buttonZ" class="motor-button selected-button" onclick="toggleMotorSelection('Z', data)">Motor
-            Z</button>
-        <button id="buttonSpindle" class="motor-button selected-button"
-            onclick="toggleMotorSelection('Spindle')">Spindle</button>
+        <button id="buttonX" class="motor-button selected-button" onclick="toggleMotorSelection('X', data)">
+            Motor X</button>
+        <button id="buttonY" class="motor-button selected-button" onclick="toggleMotorSelection('Y', data)">
+            Motor Y</button>
+        <button id="buttonZ" class="motor-button selected-button" onclick="toggleMotorSelection('Z', data)">
+            Motor Z</button>
+        <button id="buttonSpindle" class="motor-button selected-button" onclick="toggleMotorSelection('Spindle', data)">
+            Spindle</button>
     </div>
-    <div id="cycleCountsValues">
-        <h2>Cycle Counts</h2>
-        <div id="cycleCountsX" class="current-panel">
-            <h3>Cycle Count X</h3>
-            <p class="cycle-count-valuex">0</p>
-        </div>
-        <div id="cycleCountsY" class="current-panel">
-            <h3>Cycle Count Y</h3>
-            <p class="cycle-count-valuey">0</p>
-        </div>
-        <div id="cycleCountsZ" class="current-panel">
-            <h3>Cycle Count Z</h3>
-            <p class="cycle-count-valuez">0</p>
-        </div>
-        <div id="cycleCountsSpindle" class="current-panel">
-            <h3>Cycle Count Spindle</h3>
-            <p class="cycle-count-valuespindle">0</p>
-        </div>
+    <div id="latestValues">
+        <h2>Motor Currents</h2>
+        <h3>Motor X</h3>
+        <p id="latest-X">0</p>
+        <h3>Motor Y</h3>
+        <p id="latest-Y">0</p>
+        <h3>Motor Z</h3>
+        <p id="latest-Z">0</p>
+        <h3>Cycle Count Spindle</h3>
+        <p class="latest-Spindle">0</p>
     </div>
     <div id="cycleCountsGraphs" class="graph-container">
         <div class="chart-wrapper">
