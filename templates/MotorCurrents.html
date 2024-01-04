@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% block body %}
     <div id="motorSelectionButtons">
-        <button id="buttonX" class="motor-button selected-button" onclick="toggleMotorSelection('X', data)">
+        <button id="buttonX" class="motor-button selected-button" onclick="aeiou('X')">
             Motor X</button>
-        <button id="buttonY" class="motor-button selected-button" onclick="toggleMotorSelection('Y', data)">
+        <button id="buttonY" class="motor-button selected-button" onclick="aeiou('Y')">
             Motor Y</button>
-        <button id="buttonZ" class="motor-button selected-button" onclick="toggleMotorSelection('Z', data)">
+        <button id="buttonZ" class="motor-button selected-button" onclick="aeiou('Z')">
             Motor Z</button>
-        <button id="buttonSpindle" class="motor-button selected-button" onclick="toggleMotorSelection('Spindle', data)">
+        <button id="buttonSpindle" class="motor-button selected-button" onclick="aeiou('Spindle')">
             Spindle</button>
     </div>
     <div id="latestValues">
@@ -30,13 +30,18 @@
 {% endblock %}
 {% block script %}
     <script>
+        // Global vars/accessible data objects
+        var CurrentData, MAXCURData;
+
         document.addEventListener('DOMContentLoaded', async function ()   {
             /*
             // Ideally, the data is already filtered server-side so the entire database isnt passed to client,
             // then the client has to filter it.
             */
-            filterUpdateCurrentChart(await fetchDataGroup('Current'));
-            filterUpdateMaxcurChart(await fetchDataGroup('MAXCUR'))
+            CurrentData = await fetchDataGroup('Current');
+            filterUpdateCurrentChart(CurrentData);
+            MAXCURData = await fetchDataGroup('MAXCUR');
+            filterUpdateMaxcurChart(MAXCURData);
         });
 
         // Function to update the 'Current' and 'MAXCUR' line chart
@@ -49,11 +54,19 @@
         }
 
         function filterUpdateMaxcurChart(data)   {
-                const maxCurlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
-                const maxCurData = data.filter(row => [6, 8, 39, 40, 41, 42].includes(row.NodeKey));
-                const maxCurDatasets = createDatasets(maxCurData, ['X', 'Y', 'Z'], ['#FF8C66', '#66FF8C', '#668CFF']);
-                // Create line chart with datasets for 'MAXCUR'
-                createLineChart(maxCurChartId, maxCurlabels, maxCurDatasets, 'MAXCUR');
-            }
+            const maxCurlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
+            const maxCurData = data.filter(row => [6, 8, 39, 40, 41, 42].includes(row.NodeKey));
+            const maxCurDatasets = createDatasets(maxCurData, ['X', 'Y', 'Z'], ['#FF8C66', '#66FF8C', '#668CFF']);
+            // Create line chart with datasets for 'MAXCUR'
+            createLineChart(maxCurChartId, maxCurlabels, maxCurDatasets, 'MAXCUR');
+        }
+
+        function aeiou(motor)  {
+            if (motor == 'Spindle')
+                toggleMotorSelection(motor, CurrentData);
+            else
+                toggleMotorSelection(motor, MAXCURData);
+        }
+
     </script>
 {% endblock%}

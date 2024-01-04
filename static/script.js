@@ -321,22 +321,31 @@ function getSelectedData(data) {
 
     // Filter data based on selected motors
     const selectedData = data.filter(row => {
-        return selectedMotors.some(motor => isMotorNodeKey(row.NodeKey, motor));
+        let nodeKeyInMotor;
+        for (let i = 0; i < selectedMotors.length; i++)   {
+            nodeKeyInMotor = isMotorNodeKey(row.nodeKey, selectedMotors[i]);
+            if(nodeKeyInMotor)   {
+                return true;
+            }
+        }
+        return false;
+        // return selectedMotors.some(motor => isMotorNodeKey(row.NodeKey, motor));
     });
-
+    
     return selectedData;
 }
 
 function isMotorNodeKey(nodeKey, motor) {
     const motorMap = {
-        X: [7, 2, 6, 39, 9, 12, 15, 18, 21, 30, 33, 36,],
-        Y: [1, 3, 40, 42, 10, 13, 16, 19, 22, 31, 34, 37,],
-        Z: [5, 4, 8, 41, 11, 14, 17, 20, 23, 32, 35, 38,],
-        Spindle: [24, 25, 26, 27, 28, 29, 43, 44, 45], // Include the node key for the 'Spindle' motor
+        X: [7, 2, 6, 39, 9, 12, 15, 18, 21, 30, 33, 36],
+        Y: [1, 3, 40, 42, 10, 13, 16, 19, 22, 31, 34, 37],
+        Z: [5, 4, 8, 41, 11, 14, 17, 20, 23, 32, 35, 38],
+        Spindle: [24, 25, 26, 27, 28, 29, 43, 44, 45] // Include the node key for the 'Spindle' motor
     };
 
     // Check if motor is defined before accessing its properties
-    if (motor && motorMap[motor]) {
+    if (`${motor}` in motorMap)   {
+        // If the nodeKey is included in the associated motor list, return true. Otherwise, false.
         return motorMap[motor].includes(nodeKey);
     }
 
@@ -368,9 +377,9 @@ function updateCycleCountValues(data) {
 
 function updateLatestValues(data)   {
     const spindleNewVal = data.find();
-    const XNewVal = 0;
-    const YNewVal = 0;
-    const ZNewVal = 0;
+    const XNewVal = data.find();
+    const YNewVal = data.find();
+    const ZNewVal = data.find();
 
     document.getElementById('latest-Spindle').innerText = cycleCountValueSpindle;
     document.getElementById('latest-X').innerText = CYCCNTX;
