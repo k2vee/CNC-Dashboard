@@ -34,6 +34,8 @@
     <script>
         // Global vars/accessible data objects
         var CYCCNTData, CycleCountData;
+        const cycleCountsChartId = 'cycleCountsChart';
+        const cycleCountsSpindleChartId = 'cycleCountsSpindleChart';
 
         document.addEventListener('DOMContentLoaded', async function()    {
             /*
@@ -52,7 +54,7 @@
             const cyccntData = data.filter(row => [2, 3, 4].includes(row.NodeKey));
             const cyccntDatasets = createDatasets(cyccntData, ['X', 'Y', 'Z'], ['#FFC3A0', '#A0FFC3', '#A0C3FF']);
             // Create line chart with datasets for 'CYCCNT'
-            createLineChart(cyccntChartId, cyccntLabels, cyccntDatasets, 'CYCCNT');
+            createLineChart(cycleCountsChartId, cyccntLabels, cyccntDatasets, 'CYCCNT');
         }
 
         function filterUpdateCycleCountCharts(data) {
@@ -60,14 +62,21 @@
             const cycleCountData = data.filter(row => [43].includes(row.NodeKey));
             const cycleCountDatasets = createDatasets(cycleCountData, ['Spindle'], ['#FF8C66']);
             // Create line chart with datasets for 'CycleCount'
-            createLineChart(cycleCountChartId, cycleCountlabels, cycleCountDatasets, 'CycleCount');
+            createLineChart(cycleCountsSpindleChartId, cycleCountlabels, cycleCountDatasets, 'CycleCount');
         }
 
         function aeiou(motor)  {
+            /*
             if (motor == 'Spindle')
                 toggleMotorSelection(motor, CycleCountData);
             else
                 toggleMotorSelection(motor, CYCCNTData);
+            */
+            const button = document.getElementById(`button${motor}`);
+            button.classList.toggle("selected-button");
+            
+            toggleMotorSelection(motor, CycleCountData);
+            toggleMotorSelection(motor, CYCCNTData);
         }
         
     </script>

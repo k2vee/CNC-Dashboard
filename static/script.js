@@ -102,7 +102,7 @@ function createLineChart(canvasId, labels, datasets, chartTitle) {
                 },
             },
             animation: {
-                duration: 1000, // Set the duration of the animation in milliseconds
+                duration: 400, // Set the duration of the animation in milliseconds
                 easing: 'easeInOutQuad', // Set the easing function for the animation
             },
             plugins: {
@@ -125,15 +125,18 @@ function createLineChart(canvasId, labels, datasets, chartTitle) {
 }
 
 // Function that destroys current chart and creates a new one
-function updateLineChart(data) {
+function updateLineChart(data, chartId, chartTitle) {
     // Get the canvas element
-    const canvas = document.getElementById('line-chart');
+    const canvas = document.getElementById(chartId);
     const ctx = canvas.getContext('2d');
 
-    // Clear the existing chart (if any)
-    Chart.helpers.each(Chart.instances, function (instance) {
-        instance.destroy();
-    });
+    // Find the existing instance of the chart with the same canvas ID
+    const existingChart = Chart.getChart(ctx);
+
+    // Destroy the existing chart with the same canvas ID
+    if (existingChart) {
+        existingChart.destroy();
+    }
 
     // Check if data is defined and has a valid length
     if (data && data.length > 0) {
@@ -161,9 +164,9 @@ function updateLineChart(data) {
 
         // Create a dataset for each selected motor
         const colors = {
-            X: '#66c2a5', // Soft green-blue
-            Y: '#fc8d62', // Soft orange
-            Z: '#8da0cb', // Soft lavender
+            X: '#FFC3A0', // Soft green-blue
+            Y: '#A0FFC3', // Soft orange
+            Z: '#A0C3FF', // Soft lavender
             Spindle: '#e78ac3', // Soft pink
         };
 
@@ -203,13 +206,13 @@ function updateLineChart(data) {
                     },
                 },
                 animation: {
-                    duration: 1000, // Set the duration of the animation in milliseconds
+                    duration: 400, // Set the duration of the animation in milliseconds
                     easing: 'easeInOutQuad', // Set the easing function for the animation
                 },
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Line Graph', // Update title here
+                        text: chartTitle, // Update title here
                         color: '#fff', // Set title text color
                         font: {
                             size: 22, // Set the font size for the title
@@ -226,7 +229,7 @@ function updateLineChart(data) {
 
     } else {
         // If no data, clear the line chart
-        clearLineChart();
+        clearLineChart(chartId);
     }
     // Clear existing gauges
     //clearGauges();
@@ -241,9 +244,9 @@ function updateLineChart(data) {
 }
 
 // Function to clear the line chart
-function clearLineChart() {
+function clearLineChart(chartId) {
     // Get the canvas element
-    const canvas = document.getElementById('line-chart');
+    const canvas = document.getElementById(chartId);
     const ctx = canvas.getContext('2d');
 
     // Clear the canvas
@@ -301,15 +304,12 @@ function downloadCSV() {
 
 // -- Filtering Functions --
 // Function to toggle motor selection
-function toggleMotorSelection(motor, data) {
-    const button = document.getElementById(`button${motor}`);
-    button.classList.toggle('selected-button');
-
+function toggleMotorSelection(data, chartId, chartTitle) {
     // Update the line chart with the selected data
     const selectedData = getSelectedData(data);
     // updateCurrentValues(selectedData);       <-
     // updateCycleCountValues(selectedData);    <- simplify and break up function so that it is applicable for all chart pages
-    updateLineChart(selectedData);
+    updateLineChart(selectedData, chartId, chartTitle);
 }
 
 // Function to get selected data based on button states
@@ -323,7 +323,7 @@ function getSelectedData(data) {
     const selectedData = data.filter(row => {
         let nodeKeyInMotor;
         for (let i = 0; i < selectedMotors.length; i++)   {
-            nodeKeyInMotor = isMotorNodeKey(row.nodeKey, selectedMotors[i]);
+            nodeKeyInMotor = isMotorNodeKey(row.NodeKey, selectedMotors[i]);
             if(nodeKeyInMotor)   {
                 return true;
             }
@@ -344,7 +344,7 @@ function isMotorNodeKey(nodeKey, motor) {
     };
 
     // Check if motor is defined before accessing its properties
-    if (`${motor}` in motorMap)   {
+    if (motor in motorMap)   {
         // If the nodeKey is included in the associated motor list, return true. Otherwise, false.
         return motorMap[motor].includes(nodeKey);
     }

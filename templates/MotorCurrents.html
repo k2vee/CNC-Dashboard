@@ -24,7 +24,7 @@
             <canvas id="currentChart" width="40%" height="40%"></canvas>
         </div>
         <div class="chart-wrapper">
-            <canvas id="maxcurChart" width="40%" height="40%"></canvas>
+            <canvas id="maxCurChart" width="40%" height="40%"></canvas>
         </div>
     </div>
 {% endblock %}
@@ -32,6 +32,8 @@
     <script>
         // Global vars/accessible data objects
         var CurrentData, MAXCURData;
+        const currentChartId = 'currentChart';
+        const maxCurChartId = 'maxCurChart';
 
         document.addEventListener('DOMContentLoaded', async function ()   {
             /*
@@ -47,25 +49,32 @@
         // Function to update the 'Current' and 'MAXCUR' line chart
         function filterUpdateCurrentChart(data) {
             const currentLabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
-            const currentData = data.filter(row => [7, 1, 5].includes(row.NodeKey));
-            const currentDatasets = createDatasets(currentData, ['X', 'Y', 'Z'], ['#FFC3A0', '#A0FFC3', '#A0C3FF']);
+            CurrentData = data.filter(row => [7, 1, 5].includes(row.NodeKey));
+            const currentDatasets = createDatasets(CurrentData, ['X', 'Y', 'Z'], ['#FFC3A0', '#A0FFC3', '#A0C3FF']);
             // Create line chart with datasets for 'Current'
             createLineChart(currentChartId, currentLabels, currentDatasets, 'Current');
         }
 
         function filterUpdateMaxcurChart(data)   {
             const maxCurlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
-            const maxCurData = data.filter(row => [6, 8, 39, 40, 41, 42].includes(row.NodeKey));
-            const maxCurDatasets = createDatasets(maxCurData, ['X', 'Y', 'Z'], ['#FF8C66', '#66FF8C', '#668CFF']);
+            MAXCURData = data.filter(row => [6, 8, 39, 40, 41, 42].includes(row.NodeKey));
+            const maxCurDatasets = createDatasets(MAXCURData, ['X', 'Y', 'Z'], ['#FFC3A0', '#A0FFC3', '#A0C3FF']);
             // Create line chart with datasets for 'MAXCUR'
             createLineChart(maxCurChartId, maxCurlabels, maxCurDatasets, 'MAXCUR');
         }
 
         function aeiou(motor)  {
+            /*
             if (motor == 'Spindle')
                 toggleMotorSelection(motor, CurrentData);
             else
                 toggleMotorSelection(motor, MAXCURData);
+            */
+            const button = document.getElementById(`button${motor}`);
+            button.classList.toggle("selected-button");
+
+            toggleMotorSelection(CurrentData, currentChartId, 'Current');
+            toggleMotorSelection(MAXCURData, maxCurChartId, 'MAXCUR');
         }
 
     </script>

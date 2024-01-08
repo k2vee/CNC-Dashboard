@@ -37,12 +37,22 @@ option {
     color: #fff;
 }
 
+.selected-button    {
+    background-color: #23d66e;
+}
+
 /* Style for buttons */
 button {
-    background-color: #23d66e;
+    background-color: crimson;
     /* Green background for selected button */
     color: white;
     /* White text color */
+    padding: 15px 20px;
+    /* Adjust padding to set the button size */
+    font-size: 16px;
+    /* Adjust font size */
+    margin: 1%;
+    /* Add margin for spacing between buttons */
 }
 
 button:hover {
@@ -50,17 +60,6 @@ button:hover {
     /* Light blue background on hover */
     color: black;
     /* Black text color on hover */
-}
-
-/* Maintain the same size for both selected and unselected buttons */
-.selected-button,
-button {
-    padding: 15px 20px;
-    /* Adjust padding to set the button size */
-    font-size: 16px;
-    /* Adjust font size */
-    margin: 1%;
-    /* Add margin for spacing between buttons */
 }
 
 .graph-container {
