@@ -306,6 +306,7 @@ function downloadCSV() {
 // Function to toggle motor selection
 function toggleMotorSelection(data, chartId, chartTitle) {
     // Update the line chart with the selected data
+    console.log('e', data);
     const selectedData = getSelectedData(data);
     // updateCurrentValues(selectedData);       <-
     // updateCycleCountValues(selectedData);    <- simplify and break up function so that it is applicable for all chart pages
@@ -318,7 +319,7 @@ function getSelectedData(data) {
         const button = document.getElementById(`button${motor}`);
         return button.classList.contains('selected-button');
     });
-
+    console.log(data);
     // Filter data based on selected motors
     const selectedData = data.filter(row => {
         let nodeKeyInMotor;
@@ -354,35 +355,40 @@ function isMotorNodeKey(nodeKey, motor) {
 
 // -- TBC --
 function updateCurrentValues(data) {
-    const currentValueX = globalData.data.find(row => row.NodeKey === 7)?.Value;
-    const currentValueY = globalData.data.find(row => row.NodeKey === 1)?.Value;
-    const currentValueZ = globalData.data.find(row => row.NodeKey === 5)?.Value;
+    const currentValueX = data.find(row => row.NodeKey == 7)?.Value;
+    const currentValueY = data.find(row => row.NodeKey == 1)?.Value;
+    const currentValueZ = data.find(row => row.NodeKey == 5)?.Value;
+    console.log(data);
+    console.log(currentValueX, currentValueY, currentValueZ);
 
-    document.getElementById('currentX').querySelector('.current-value').innerText = currentValueX;
-    document.getElementById('currentY').querySelector('.current-value').innerText = currentValueY;
-    document.getElementById('currentZ').querySelector('.current-value').innerText = currentValueZ;
+    document.getElementById('latest-X').innerText = currentValueX;
+    document.getElementById('latest-Y').innerText = currentValueY;
+    document.getElementById('latest-Z').innerText = currentValueZ;
 }
 
 // C: This thing also doesn't work I think
 function updateCycleCountValues(data) {
-    const cycleCountValueSpindle = globalData.data.find(row => row.NodeKey === 43)?.Value || 0;
-    const CYCCNTX = globalData.data.find(row => row.NodeKey === 2)?.Value || 0;
-    const CYCCNTY = globalData.data.find(row => row.NodeKey === 3)?.Value || 0;
-    const CYCCNTZ = globalData.data.find(row => row.NodeKey === 4)?.Value || 0;
-    document.getElementById('cycleCountsSpindle').querySelector('.cycle-count-value').innerText = cycleCountValueSpindle;
-    document.getElementById('cycleCountsX').querySelector('.cycle-count-value').innerText = CYCCNTX;
-    document.getElementById('cycleCountsY').querySelector('.cycle-count-value').innerText = CYCCNTY;
-    document.getElementById('cycleCountsZ').querySelector('.cycle-count-value').innerText = CYCCNTZ;
+    const CYCCNTX = data.find(row => row.NodeKey == 2)?.Value || 0;
+    const CYCCNTY = data.find(row => row.NodeKey == 3)?.Value || 0;
+    const CYCCNTZ = data.find(row => row.NodeKey == 4)?.Value || 0;
+    const cycleCountValueSpindle = data.find(row => row.NodeKey === 43)?.Value || 0;
+
+    document.getElementById('latest-X').querySelector('.cycle-count-value').innerText = CYCCNTX;
+    document.getElementById('latest-Y').querySelector('.cycle-count-value').innerText = CYCCNTY;
+    document.getElementById('latest-Z').querySelector('.cycle-count-value').innerText = CYCCNTZ;
+    document.getElementById('latest-Spindle').querySelector('.cycle-count-value').innerText = cycleCountValueSpindle;
+
 }
 
+// This function will remain unused for the time being
 function updateLatestValues(data)   {
-    const spindleNewVal = data.find();
     const XNewVal = data.find();
     const YNewVal = data.find();
     const ZNewVal = data.find();
+    const spindleNewVal = data.find();
 
-    document.getElementById('latest-Spindle').innerText = cycleCountValueSpindle;
-    document.getElementById('latest-X').innerText = CYCCNTX;
-    document.getElementById('latest-Y').innerText = CYCCNTY;
-    document.getElementById('latest-Z').innerText = CYCCNTZ;
+    document.getElementById('latest-Spindle').innerText = spindleNewVal;
+    document.getElementById('latest-X').innerText = XNewVal;
+    document.getElementById('latest-Y').innerText = YNewVal;
+    document.getElementById('latest-Z').innerText = ZNewVal;
 }

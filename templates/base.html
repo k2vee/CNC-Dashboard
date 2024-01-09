@@ -31,11 +31,11 @@
     </nav>
 
     <!-- C: Whar -->
-    <div id="contentSection" style="display: none;">
-        <!-- Content for different sections will be dynamically inserted here -->
+    <div id="contentSection">
+        {% block content %}
+        {% endblock %}
     </div>
-    {% block body %}
-    {% endblock %}
+    
     <script>
         // some of these should be deprecated after fixing database queries
         // let globalData = [];

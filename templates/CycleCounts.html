@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block body %}
+{% block content %}
     <div id="motorSelectionButtons">
         <button id="buttonX" class="motor-button selected-button" onclick="aeiou('X')">
             Motor X</button>
@@ -23,10 +23,10 @@
     </div>
     <div id="cycleCountsGraphs" class="graph-container">
         <div class="chart-wrapper">
-            <canvas id="cycleCountsChart" width="40%" height="40%"></canvas>
+            <canvas id="cycleCountsChart"></canvas>
         </div>
         <div class="chart-wrapper">
-            <canvas id="cycleCountsSpindleChart" width="40%" height="40%"></canvas>
+            <canvas id="cycleCountsSpindleChart"></canvas>
         </div>
     </div>
 {% endblock %}
@@ -51,16 +51,16 @@
         // Function to update the 'CYCCNT' line chart
         function filterUpdateCYCCNTCharts(data) {
             const cyccntLabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
-            const cyccntData = data.filter(row => [2, 3, 4].includes(row.NodeKey));
-            const cyccntDatasets = createDatasets(cyccntData, ['X', 'Y', 'Z'], ['#FFC3A0', '#A0FFC3', '#A0C3FF']);
+            CYCCNTData = data.filter(row => [2, 3, 4].includes(row.NodeKey));
+            const cyccntDatasets = createDatasets(CYCCNTData, ['X', 'Y', 'Z'], ['#FFC3A0', '#A0FFC3', '#A0C3FF']);
             // Create line chart with datasets for 'CYCCNT'
             createLineChart(cycleCountsChartId, cyccntLabels, cyccntDatasets, 'CYCCNT');
         }
 
         function filterUpdateCycleCountCharts(data) {
             const cycleCountlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
-            const cycleCountData = data.filter(row => [43].includes(row.NodeKey));
-            const cycleCountDatasets = createDatasets(cycleCountData, ['Spindle'], ['#FF8C66']);
+            CycleCountData = data.filter(row => [43].includes(row.NodeKey));
+            const cycleCountDatasets = createDatasets(CycleCountData, ['Spindle'], ['#FF8C66']);
             // Create line chart with datasets for 'CycleCount'
             createLineChart(cycleCountsSpindleChartId, cycleCountlabels, cycleCountDatasets, 'CycleCount');
         }
@@ -75,8 +75,8 @@
             const button = document.getElementById(`button${motor}`);
             button.classList.toggle("selected-button");
             
-            toggleMotorSelection(motor, CycleCountData);
-            toggleMotorSelection(motor, CYCCNTData);
+            toggleMotorSelection(CYCCNTData, cycleCountsChartId, 'CYCCNT');
+            toggleMotorSelection(CycleCountData, cycleCountsSpindleChartId, 'CycleCount');
         }
         
     </script>

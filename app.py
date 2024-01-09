@@ -83,7 +83,9 @@ def generate_group_node_keys(node_key_mapping):
 # C: Searches for substring, returns substring.
 # C: We can replace this with a switch, and also add a default case
 def get_group_from_node_id(node_id):
-    if 'Current' in node_id:
+    if 'CurrentPosition' in node_id:
+        return 'CurrentPosition'
+    elif 'Current' in node_id:
         return 'Current'
     elif 'CYCCNT' in node_id:
         return 'CYCCNT'
@@ -97,8 +99,6 @@ def get_group_from_node_id(node_id):
         return 'SCAPOS'
     elif 'RemainCommand' in node_id:
         return 'RemainCommand'
-    elif 'CurrentPosition' in node_id:
-        return 'CurrentPosition'
     elif 'Gain' in node_id:
         return 'Gain'
     elif 'Droop' in node_id:
@@ -180,13 +180,10 @@ def get_group_data():
     # Fetch values from the updated database based on the selected group
     data = fetch_data_by_group(group)
 
-    # Fetch field groups from the database
-    field_groups = fetch_field_groups()
-
     print("Data fetched. Converting to JSON.")
 
     # Return JSON response with both data and field_groups
-    return jsonify(data=data, field_groups=field_groups)
+    return jsonify(data=data)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5500)

@@ -22,6 +22,11 @@ body {
     color: #fff;
 }
 
+#contentSection {
+    padding: 8vw;
+    padding-top: 2vw;
+}
+
 /* Dark mode styling for dropdown */
 select {
     background-color: #555;
@@ -37,13 +42,9 @@ option {
     color: #fff;
 }
 
-.selected-button    {
-    background-color: #23d66e;
-}
-
 /* Style for buttons */
 button {
-    background-color: crimson;
+    background-color: #23d66e;
     /* Green background for selected button */
     color: white;
     /* White text color */
@@ -60,6 +61,14 @@ button:hover {
     /* Light blue background on hover */
     color: black;
     /* Black text color on hover */
+}
+
+.motor-button   {
+    background-color: orangered;
+}
+
+.selected-button    {
+    background-color: #23d66e;
 }
 
 .graph-container {
@@ -79,12 +88,15 @@ canvas {
 }
 
 
-
-
-
 nav {
-    background-color: #333;
+    background-color: #515151;
     overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    font-weight: bold;
+
 }
 
 nav ul {
@@ -102,7 +114,8 @@ nav a {
     display: block;
     color: white;
     text-align: center;
-    padding: 14px 16px;
+    padding: 14px;
+    padding-right: 16px;
     text-decoration: none;
 }
 

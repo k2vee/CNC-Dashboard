@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block body %}
+{% block content %}
     <div id="motorSelectionButtons">
         <button id="buttonX" class="motor-button selected-button" onclick="aeiou('X')">
             Motor X</button>
@@ -21,10 +21,10 @@
     </div>
     <div id="currentGraphs" class="graph-container">
         <div class="chart-wrapper">
-            <canvas id="currentChart" width="40%" height="40%"></canvas>
+            <canvas id="currentChart"></canvas>
         </div>
         <div class="chart-wrapper">
-            <canvas id="maxCurChart" width="40%" height="40%"></canvas>
+            <canvas id="maxCurChart"></canvas>
         </div>
     </div>
 {% endblock %}
@@ -44,6 +44,7 @@
             filterUpdateCurrentChart(CurrentData);
             MAXCURData = await fetchDataGroup('MAXCUR');
             filterUpdateMaxcurChart(MAXCURData);
+            updateCurrentValues(CurrentData);
         });
 
         // Function to update the 'Current' and 'MAXCUR' line chart
