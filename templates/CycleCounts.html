@@ -52,7 +52,7 @@
         function filterUpdateCYCCNTCharts(data) {
             const cyccntLabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
             CYCCNTData = data.filter(row => [2, 3, 4].includes(row.NodeKey));
-            const cyccntDatasets = createDatasets(CYCCNTData, ['X', 'Y', 'Z'], ['#FFC3A0', '#A0FFC3', '#A0C3FF']);
+            const cyccntDatasets = createDatasets(CYCCNTData, ['X', 'Y', 'Z']);
             // Create line chart with datasets for 'CYCCNT'
             createLineChart(cycleCountsChartId, cyccntLabels, cyccntDatasets, 'CYCCNT');
         }
@@ -60,7 +60,7 @@
         function filterUpdateCycleCountCharts(data) {
             const cycleCountlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
             CycleCountData = data.filter(row => [43].includes(row.NodeKey));
-            const cycleCountDatasets = createDatasets(CycleCountData, ['Spindle'], ['#FF8C66']);
+            const cycleCountDatasets = createDatasets(CycleCountData, ['Spindle']);
             // Create line chart with datasets for 'CycleCount'
             createLineChart(cycleCountsSpindleChartId, cycleCountlabels, cycleCountDatasets, 'CycleCount');
         }
@@ -75,8 +75,8 @@
             const button = document.getElementById(`button${motor}`);
             button.classList.toggle("selected-button");
             
-            toggleMotorSelection(CYCCNTData, cycleCountsChartId, 'CYCCNT');
-            toggleMotorSelection(CycleCountData, cycleCountsSpindleChartId, 'CycleCount');
+            toggleMotorSelection(cycleCountsChartId, CYCCNTData, 'CYCCNT');
+            toggleMotorSelection(cycleCountsSpindleChartId, CycleCountData, 'CycleCount');
         }
         
     </script>

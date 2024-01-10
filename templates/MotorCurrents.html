@@ -50,16 +50,16 @@
         // Function to update the 'Current' and 'MAXCUR' line chart
         function filterUpdateCurrentChart(data) {
             const currentLabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
-            CurrentData = data.filter(row => [7, 1, 5].includes(row.NodeKey));
-            const currentDatasets = createDatasets(CurrentData, ['X', 'Y', 'Z'], ['#FFC3A0', '#A0FFC3', '#A0C3FF']);
+            CurrentData = data.filter(row => ['Current1', 'Current2', 'Current3'].some(v => row.NodeId.includes(v)));
+            const currentDatasets = createDatasets(CurrentData, ['X', 'Y', 'Z']);
             // Create line chart with datasets for 'Current'
             createLineChart(currentChartId, currentLabels, currentDatasets, 'Current');
         }
 
         function filterUpdateMaxcurChart(data)   {
             const maxCurlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
-            MAXCURData = data.filter(row => [6, 8, 39, 40, 41, 42].includes(row.NodeKey));
-            const maxCurDatasets = createDatasets(MAXCURData, ['X', 'Y', 'Z'], ['#FFC3A0', '#A0FFC3', '#A0C3FF']);
+            MAXCURData = data.filter(row => ['MAXCUR21', 'MAXCUR22', 'MAXCUR23'].some(v => row.NodeId.includes(v)));
+            const maxCurDatasets = createDatasets(MAXCURData, ['X', 'Y', 'Z']);
             // Create line chart with datasets for 'MAXCUR'
             createLineChart(maxCurChartId, maxCurlabels, maxCurDatasets, 'MAXCUR');
         }
@@ -74,8 +74,8 @@
             const button = document.getElementById(`button${motor}`);
             button.classList.toggle("selected-button");
 
-            toggleMotorSelection(CurrentData, currentChartId, 'Current');
-            toggleMotorSelection(MAXCURData, maxCurChartId, 'MAXCUR');
+            toggleMotorSelection(currentChartId, CurrentData, 'Current');
+            toggleMotorSelection(maxCurChartId, MAXCURData, 'MAXCUR');
         }
 
     </script>

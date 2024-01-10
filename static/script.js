@@ -9,50 +9,35 @@ async function fetchDataGroup(group)    {
     }
 }
 
-/* To resolve
-    : - Where 'getSelectedData' and 'updateCurrentValues' come into the picture when loading pages
-    : - Dead function
-*/
-async function showMotorCurrents() {
-        // :Truncate from here onwards and return data.data
-        // Update the current values with the selected data
-        const selectedData = getSelectedData();
-        // Latest values of each data point displayed in some lines
-        updateCurrentValues(selectedData);
-}
-
-/* To resolve
-    : - Where 'getSelectedData' and 'updateCycleCountValues' come into the picture when loading pages
-    : - Dead function
-*/ 
-async function showCycleCounts()    {
-    // Update the current values with the selected data
-    const selectedData = getSelectedData();
-    updateCycleCountValues(selectedData);
-}
-
 // -- Chart functions --
 // C: Creates ??datasets??
-function createDatasets(data, motors, colors) {
-    console.log('All data:', data);
-
+function createDatasets(data, motors) {
     const datasets = [];
 
+    // Colors for each motor
+    const colors = {
+        X: '#FFC3A0', // Soft green-blue
+        Y: '#A0FFC3', // Soft orange
+        Z: '#A0C3FF', // Soft lavender
+        Spindle: '#e78ac3', // Soft pink
+    };
+
+    // Splits motor data 
     motors.forEach((motor, index) => {
         // Filter data for the current motor
         const motorData = data.filter(row => {
-            const isMotor = isMotorNodeKey(row.NodeKey, motor);
-            console.log(`Checking NodeKey ${row.NodeKey} for Motor ${motor}: ${isMotor}`);
+            const isMotor = isMotorNodeId(row.NodeId, motor);
+            console.log(`Checking NodeId ${row.NodeId} for Motor ${motor}: ${isMotor}`);
             return isMotor;
         });
 
         console.log(`Filtered data for ${motor}:`, motorData);
-
+        
         if (motorData.length > 0) {
             datasets.push({
                 label: `Motor ${motor}`,
-                borderColor: colors[index],
-                data: motorData.map(row => row.Value),
+                borderColor: colors[motor],
+                data: motorData.map(row => row.Value)
             });
         } else {
             console.log(`No data found for ${motor}.`);
@@ -161,7 +146,7 @@ function updateLineChart(data, chartId, chartTitle) {
             Z: motorSelection.Z ? data.filter(row => [4, 5, 8, 11, 14, 17, 20, 23, 32, 35, 38, 41].includes(row.NodeKey)) : [],
             Spindle: motorSelection.Spindle ? data.filter(row => [24, 25, 26, 27, 28, 29, 43, 44, 45].includes(row.NodeKey)) : [],
         };
-
+        console.log(groupedData);
         // Create a dataset for each selected motor
         const colors = {
             X: '#FFC3A0', // Soft green-blue
@@ -169,10 +154,10 @@ function updateLineChart(data, chartId, chartTitle) {
             Z: '#A0C3FF', // Soft lavender
             Spindle: '#e78ac3', // Soft pink
         };
-
-        for (const motor in groupedData) {
-            if (groupedData[motor].length > 0) {
-                const values = groupedData[motor].map(row => row.Value);
+        
+        for (const motor in data) {
+            if (data[motor].length > 0) {
+                const values = data[motor].map(row => row.Value);
                 datasets.push({
                     label: `Motor ${motor}`,
                     borderColor: colors[motor],
@@ -235,9 +220,9 @@ function updateLineChart(data, chartId, chartTitle) {
     //clearGauges();
 
     // Extract speed values for motors X, Y, and Z
-    const speedX = data.find(row => row.NodeKey === 36)?.Value || 0;
-    const speedY = data.find(row => row.NodeKey === 37)?.Value || 0;
-    const speedZ = data.find(row => row.NodeKey === 38)?.Value || 0;
+    //const speedX = data.find(row => row.NodeKey === 36)?.Value || 0;
+    //const speedY = data.find(row => row.NodeKey === 37)?.Value || 0;
+    //const speedZ = data.find(row => row.NodeKey === 38)?.Value || 0;
 
     // Update or create speedometer gauges
     //updateSpeedometerGauges(speedX, speedY, speedZ);
@@ -304,62 +289,64 @@ function downloadCSV() {
 
 // -- Filtering Functions --
 // Function to toggle motor selection
-function toggleMotorSelection(data, chartId, chartTitle) {
+function toggleMotorSelection(canvasId, data, chartTitle) {
     // Update the line chart with the selected data
-    console.log('e', data);
     const selectedData = getSelectedData(data);
-    // updateCurrentValues(selectedData);       <-
-    // updateCycleCountValues(selectedData);    <- simplify and break up function so that it is applicable for all chart pages
-    updateLineChart(selectedData, chartId, chartTitle);
+    const dataset = createDatasets(selectedData, getSelectedMotors());
+    const labels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
+
+    //updateLineChart(selectedData, chartId, chartTitle);
+    createLineChart(canvasId, labels, dataset, chartTitle);
 }
 
 // Function to get selected data based on button states
 function getSelectedData(data) {
-    const selectedMotors = ['X', 'Y', 'Z', 'Spindle'].filter(motor => {
-        const button = document.getElementById(`button${motor}`);
-        return button.classList.contains('selected-button');
-    });
-    console.log(data);
+    const selectedMotors = getSelectedMotors();
+
     // Filter data based on selected motors
     const selectedData = data.filter(row => {
-        let nodeKeyInMotor;
+        let nodeIdInMotor;
         for (let i = 0; i < selectedMotors.length; i++)   {
-            nodeKeyInMotor = isMotorNodeKey(row.NodeKey, selectedMotors[i]);
-            if(nodeKeyInMotor)   {
+            nodeIdInMotor = isMotorNodeId(row.NodeId, selectedMotors[i]);
+            if(nodeIdInMotor)   {
                 return true;
             }
         }
         return false;
-        // return selectedMotors.some(motor => isMotorNodeKey(row.NodeKey, motor));
     });
     
     return selectedData;
 }
 
-function isMotorNodeKey(nodeKey, motor) {
+function isMotorNodeId(nodeId, motor) {
     const motorMap = {
-        X: [7, 2, 6, 39, 9, 12, 15, 18, 21, 30, 33, 36],
-        Y: [1, 3, 40, 42, 10, 13, 16, 19, 22, 31, 34, 37],
-        Z: [5, 4, 8, 41, 11, 14, 17, 20, 23, 32, 35, 38],
-        Spindle: [24, 25, 26, 27, 28, 29, 43, 44, 45] // Include the node key for the 'Spindle' motor
+        X: ['Current1', 'CYCCNT1', 'MAXCUR21', 'MACPOS1', 'MATPOS1', 'SCAPOS1', 'RemainCommand1', 'CurrentPosition1', 'ServoMonitor_Gain1', 'ServoMonitor_Droop1', 'Speed1'],
+        Y: ['Current2', 'CYCCNT2', 'MAXCUR22', 'MACPOS2', 'MATPOS2', 'SCAPOS2', 'RemainCommand2', 'CurrentPosition2', 'Gain2', 'Droop2', 'Speed1'],
+        Z: ['Current3', 'CYCCNT3', 'MAXCUR23', 'MACPOS3', 'MATPOS3', 'SCAPOS3', 'RemainCommand3', 'CurrentPosition3', 'Gain3', 'Droop3', 'Speed1'],
+        Spindle: ['SpindleMonitor_Gain1', 'SpindleMonitor_Droop1', 'LEDDisplay1', 'ControlInput11', 'ControlOutput11', 'ControlOutput41', 'CycleCount1', 'ControlOutput21', 'Load1'] // Include the node key for the 'Spindle' motor
     };
 
     // Check if motor is defined before accessing its properties
     if (motor in motorMap)   {
-        // If the nodeKey is included in the associated motor list, return true. Otherwise, false.
-        return motorMap[motor].includes(nodeKey);
+        // If the nodeId is included in the associated motor list, return true. Otherwise, false.
+        return motorMap[motor].some(v => nodeId.includes(v));
     }
 
     return false;
 }
 
+function getSelectedMotors()    {
+    return(['X', 'Y', 'Z', 'Spindle'].filter(motor => {
+        const button = document.getElementById(`button${motor}`);
+        return button.classList.contains('selected-button');
+    })); 
+}
+
 // -- TBC --
 function updateCurrentValues(data) {
-    const currentValueX = data.find(row => row.NodeKey == 7)?.Value;
-    const currentValueY = data.find(row => row.NodeKey == 1)?.Value;
-    const currentValueZ = data.find(row => row.NodeKey == 5)?.Value;
-    console.log(data);
-    console.log(currentValueX, currentValueY, currentValueZ);
+    const currentValueX = data.find(row => row.NodeId.includes('Current1'))?.Value;
+    const currentValueY = data.find(row => row.NodeId.includes('Current2'))?.Value;
+    const currentValueZ = data.find(row => row.NodeId.includes('Current3'))?.Value;
 
     document.getElementById('latest-X').innerText = currentValueX;
     document.getElementById('latest-Y').innerText = currentValueY;
@@ -368,15 +355,15 @@ function updateCurrentValues(data) {
 
 // C: This thing also doesn't work I think
 function updateCycleCountValues(data) {
-    const CYCCNTX = data.find(row => row.NodeKey == 2)?.Value || 0;
-    const CYCCNTY = data.find(row => row.NodeKey == 3)?.Value || 0;
-    const CYCCNTZ = data.find(row => row.NodeKey == 4)?.Value || 0;
-    const cycleCountValueSpindle = data.find(row => row.NodeKey === 43)?.Value || 0;
+    const CYCCNTX = data.find(row => row.NodeId.includes('CYCCNT1'))?.Value || 1337;
+    const CYCCNTY = data.find(row => row.NodeId.includes('CYCCNT2'))?.Value || 1337;
+    const CYCCNTZ = data.find(row => row.NodeId.includes('CYCCNT3'))?.Value || 1337;
+    const cycleCountValueSpindle = data.find(row => row.NodeId.includes('CycleCount1'))?.Value || 1337;
 
-    document.getElementById('latest-X').querySelector('.cycle-count-value').innerText = CYCCNTX;
-    document.getElementById('latest-Y').querySelector('.cycle-count-value').innerText = CYCCNTY;
-    document.getElementById('latest-Z').querySelector('.cycle-count-value').innerText = CYCCNTZ;
-    document.getElementById('latest-Spindle').querySelector('.cycle-count-value').innerText = cycleCountValueSpindle;
+    document.getElementById('latest-X').innerText = CYCCNTX;
+    document.getElementById('latest-Y').innerText = CYCCNTY;
+    document.getElementById('latest-Z').innerText = CYCCNTZ;
+    document.getElementById('latest-Spindle').innerText = cycleCountValueSpindle;
 
 }
 
