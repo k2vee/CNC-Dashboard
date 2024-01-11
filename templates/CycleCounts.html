@@ -46,12 +46,14 @@
             filterUpdateCYCCNTCharts(CYCCNTData);
             CycleCountData = await fetchDataGroup('CycleCount')
             filterUpdateCycleCountCharts(CycleCountData);
+            console.log(CYCCNTData);
+            updateCycleCountValues(CYCCNTData);
         })
 
         // Function to update the 'CYCCNT' line chart
         function filterUpdateCYCCNTCharts(data) {
             const cyccntLabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
-            CYCCNTData = data.filter(row => [2, 3, 4].includes(row.NodeKey));
+            CYCCNTData = data.filter(row => ['CYCCNT1', 'CYCCNT2', 'CYCCNT3'].some(v => row.NodeId.includes(v)));
             const cyccntDatasets = createDatasets(CYCCNTData, ['X', 'Y', 'Z']);
             // Create line chart with datasets for 'CYCCNT'
             createLineChart(cycleCountsChartId, cyccntLabels, cyccntDatasets, 'CYCCNT');
@@ -59,7 +61,7 @@
 
         function filterUpdateCycleCountCharts(data) {
             const cycleCountlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
-            CycleCountData = data.filter(row => [43].includes(row.NodeKey));
+            CycleCountData = data.filter(row => ['CycleCount1'].some(v => row.NodeId.includes(v)));
             const cycleCountDatasets = createDatasets(CycleCountData, ['Spindle']);
             // Create line chart with datasets for 'CycleCount'
             createLineChart(cycleCountsSpindleChartId, cycleCountlabels, cycleCountDatasets, 'CycleCount');

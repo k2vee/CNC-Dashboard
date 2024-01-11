@@ -11,10 +11,10 @@ async function fetchDataGroup(group)    {
 
 // -- Chart functions --
 // C: Creates ??datasets??
-function createDatasets(data, motors) {
+function createDatasets(data, motors) { 
     const datasets = [];
 
-    // Colors for each motor
+    // Colors for each
     const colors = {
         X: '#FFC3A0', // Soft green-blue
         Y: '#A0FFC3', // Soft orange
@@ -238,55 +238,6 @@ function clearLineChart(chartId) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-// -- CSV functions --
-// Function to convert data to CSV format
-function convertToCSV(data) {
-    const csv = [];
-    const header = Object.keys(data[0]);
-    csv.push(header.join(','));
-
-    data.forEach(row => {
-        const values = header.map(key => row[key]);
-        csv.push(values.join(','));
-    });
-
-    return csv.join('\n');
-}
-
-// Function to trigger CSV download
-function downloadCSV() {
-    // Get the table data
-    const table = document.getElementById('data-table');
-    const rows = table.getElementsByTagName('tr');
-    const data = [];
-
-    // Iterate through rows and cells to collect data
-    for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        const cells = row.getElementsByTagName('td');
-        const rowData = {};
-
-        for (let j = 0; j < cells.length; j++) {
-            const cell = cells[j];
-            const header = table.rows[0].cells[j].innerText;
-            rowData[header] = cell.innerText;
-        }
-
-        data.push(rowData);
-    }
-
-    // Convert data to CSV format
-    const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(convertToCSV(data));
-
-    // Create a hidden link element and trigger the download
-    const link = document.createElement('a');
-    link.href = csvContent;
-    link.download = 'table_data.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
 // -- Filtering Functions --
 // Function to toggle motor selection
 function toggleMotorSelection(canvasId, data, chartTitle) {
@@ -342,40 +293,97 @@ function getSelectedMotors()    {
     })); 
 }
 
-// -- TBC --
+// -- For updating latest values on each page --
 function updateCurrentValues(data) {
-    const currentValueX = data.find(row => row.NodeId.includes('Current1'))?.Value;
-    const currentValueY = data.find(row => row.NodeId.includes('Current2'))?.Value;
-    const currentValueZ = data.find(row => row.NodeId.includes('Current3'))?.Value;
+    const X = findLatestValue(data.filter(row => row.NodeId.includes('Current1')));
+    const Y = findLatestValue(data.filter(row => row.NodeId.includes('Current2')));
+    const Z = findLatestValue(data.filter(row => row.NodeId.includes('Current3')));
 
-    document.getElementById('latest-X').innerText = currentValueX;
-    document.getElementById('latest-Y').innerText = currentValueY;
-    document.getElementById('latest-Z').innerText = currentValueZ;
+    document.getElementById('latest-X').innerText = X;
+    document.getElementById('latest-Y').innerText = Y;
+    document.getElementById('latest-Z').innerText = Z;
 }
 
-// C: This thing also doesn't work I think
 function updateCycleCountValues(data) {
-    const CYCCNTX = data.find(row => row.NodeId.includes('CYCCNT1'))?.Value || 1337;
-    const CYCCNTY = data.find(row => row.NodeId.includes('CYCCNT2'))?.Value || 1337;
-    const CYCCNTZ = data.find(row => row.NodeId.includes('CYCCNT3'))?.Value || 1337;
-    const cycleCountValueSpindle = data.find(row => row.NodeId.includes('CycleCount1'))?.Value || 1337;
+    const X = findLatestValue(data.filter(row => row.NodeId.includes('CYCCNT1')));
+    const Y = findLatestValue(data.filter(row => row.NodeId.includes('CYCCNT2')));
+    const Z = findLatestValue(data.filter(row => row.NodeId.includes('CYCCNT3')));
 
-    document.getElementById('latest-X').innerText = CYCCNTX;
-    document.getElementById('latest-Y').innerText = CYCCNTY;
-    document.getElementById('latest-Z').innerText = CYCCNTZ;
-    document.getElementById('latest-Spindle').innerText = cycleCountValueSpindle;
-
+    document.getElementById('latest-X').innerText = X;
+    document.getElementById('latest-Y').innerText = Y;
+    document.getElementById('latest-Z').innerText = Z;
+    //document.getElementById('latest-Spindle').innerText = findLatestValue(data.filter(row => row.NodeId == `Current1`));
 }
 
-// This function will remain unused for the time being
-function updateLatestValues(data)   {
-    const XNewVal = data.find();
-    const YNewVal = data.find();
-    const ZNewVal = data.find();
-    const spindleNewVal = data.find();
+function findLatestValue(filteredData)  {
+    let latestValue = 0;
+    for(time_t0 = 0, i = 0; i < filteredData.length; i++)    {
+        let time_t1 = filteredData[i].ServerTimeStamp;
+        if(time_t1 > time_t0)
+            latestValue = filteredData[i].Value;
+        time_t0 = time_t1;
+    }
+    return latestValue;
+}
+
+// This function will remain unused
+function updateLatestValues(data, servoKey, spindleKey)   {
+    const XNewVal = findLatestValue(data.filter(row => row.NodeId == `${servoKey}1`));
+    const YNewVal = findLatestValue(data.filter(row => row.NodeId == `${servoKey}2`));
+    const ZNewVal = findLatestValue(data.filter(row => row.NodeId == `${servoKey}3`));
+    const spindleNewVal = findLatestValue(data.filter(row => row.NodeId == `${spindleKey}1`));
 
     document.getElementById('latest-Spindle').innerText = spindleNewVal;
     document.getElementById('latest-X').innerText = XNewVal;
     document.getElementById('latest-Y').innerText = YNewVal;
     document.getElementById('latest-Z').innerText = ZNewVal;
+}
+
+// -- CSV functions --
+// Function to convert data to CSV format
+function convertToCSV(data) {
+    const csv = [];
+    const header = Object.keys(data[0]);
+    csv.push(header.join(','));
+
+    data.forEach(row => {
+        const values = header.map(key => row[key]);
+        csv.push(values.join(','));
+    });
+
+    return csv.join('\n');
+}
+
+// Function to trigger CSV download
+function downloadCSV() {
+    // Get the table data
+    const table = document.getElementById('data-table');
+    const rows = table.getElementsByTagName('tr');
+    const data = [];
+
+    // Iterate through rows and cells to collect data
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        const rowData = {};
+
+        for (let j = 0; j < cells.length; j++) {
+            const cell = cells[j];
+            const header = table.rows[0].cells[j].innerText;
+            rowData[header] = cell.innerText;
+        }
+
+        data.push(rowData);
+    }
+
+    // Convert data to CSV format
+    const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(convertToCSV(data));
+
+    // Create a hidden link element and trigger the download
+    const link = document.createElement('a');
+    link.href = csvContent;
+    link.download = 'table_data.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }

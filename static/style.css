@@ -87,7 +87,6 @@ canvas {
     display: block;
 }
 
-
 nav {
     background-color: #515151;
     overflow: hidden;
@@ -96,7 +95,7 @@ nav {
     left: 0;
     width: 100%;
     font-weight: bold;
-
+    display: inline-block;
 }
 
 nav ul {
@@ -108,6 +107,7 @@ nav ul {
 
 nav li {
     float: left;
+    position: inline-start;
 }
 
 nav a {
