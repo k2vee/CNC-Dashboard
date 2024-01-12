@@ -1,92 +1,3 @@
-table {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-th,
-td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-}
-
-th {
-    background-color: #f2f2f2;
-    color: #333;
-    /* Header text color in dark mode */
-}
-
-/* Dark mode styling */
-body {
-    background-color: #333;
-    color: #fff;
-}
-
-#contentSection {
-    padding: 8vw;
-    padding-top: 2vw;
-}
-
-/* Dark mode styling for dropdown */
-select {
-    background-color: #555;
-    color: #fff;
-    border: 1px solid #777;
-    border-radius: 4px;
-    padding: 5px;
-}
-
-/* Dark mode styling for dropdown options */
-option {
-    background-color: #555;
-    color: #fff;
-}
-
-/* Style for buttons */
-button {
-    background-color: #23d66e;
-    /* Green background for selected button */
-    color: white;
-    /* White text color */
-    padding: 15px 20px;
-    /* Adjust padding to set the button size */
-    font-size: 16px;
-    /* Adjust font size */
-    margin: 1%;
-    /* Add margin for spacing between buttons */
-}
-
-button:hover {
-    background-color: #88beeb;
-    /* Light blue background on hover */
-    color: black;
-    /* Black text color on hover */
-}
-
-.motor-button   {
-    background-color: orangered;
-}
-
-.selected-button    {
-    background-color: #23d66e;
-}
-
-.graph-container {
-    display: flex;
-    justify-content: space-between;
-    width: 80vw;
-    /* Adjust the width as needed */
-    margin: 2% auto;
-}
-
-canvas {
-    min-width: 40vw;
-    min-height: 50vh;
-    width: 40vw;
-    height: 50vh;
-    display: block;
-}
-
 nav {
     background-color: #515151;
     overflow: hidden;
@@ -95,23 +6,20 @@ nav {
     left: 0;
     width: 100%;
     font-weight: bold;
-    display: inline-block;
+    white-space: nowrap;
 }
 
 nav ul {
     list-style-type: none;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
 }
 
 nav li {
-    float: left;
+    display: inline;
     position: inline-start;
 }
 
 nav a {
-    display: block;
+    display: inline block;
     color: white;
     text-align: center;
     padding: 14px;
@@ -122,6 +30,101 @@ nav a {
 nav a:hover {
     background-color: #ddd;
     color: black;
+}
+
+body {
+    background-color: #333;
+    color: #fff;
+}
+
+#contentSection {
+    padding: 5vw;
+    padding-top: 8vh;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    
+}
+
+th {
+    background-color: #f2f2f2;
+    color: #333;
+    /* Header text color in dark mode */
+}
+
+select {
+    background-color: #555;
+    color: #fff;
+    border: 1px solid #777;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+option {
+    background-color: #555;
+    color: #fff;
+}
+
+button {
+    background-color: #23d66e;
+    color: white;
+    padding: 15px 20px;
+    font-size: 16px;
+    margin: 1%;
+}
+
+button:hover {
+    background-color: #88beeb;
+    color: black;
+}
+
+.motor-button   {
+    background-color: orangered;
+}
+
+.selected-button    {
+    background-color: #23d66e;
+}
+
+#latestValues  {
+    display: inline grid;
+    grid-template-columns: 50% 50%;
+    background-color: #444;
+    padding: 1vw 1vh;
+}
+
+.chart-latestValues {
+    display: inline block;
+}
+
+.graph-container {
+    display: flex;
+    justify-content: space-between;
+    width: 80vw;
+    /* Adjust the width as needed */
+}
+
+.chart-wrapper  {
+    background-color: #444;
+    margin: 1%;
+    border-radius: 2%;
+    padding: 3px;
+}
+
+canvas {
+    min-width: 40vw;
+    min-height: 50vh;
+    width: 40vw;
+    height: 50vh;
+    display: inline;
 }
 
 #groupFilterContainer {
