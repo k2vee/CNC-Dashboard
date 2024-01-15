@@ -9,6 +9,29 @@ async function fetchDataGroup(group)    {
     }
 }
 
+// Pass the group of data requested and returns the latest 100 rows from db
+async function fetchDataGroupLimited(group) {
+    try{
+        const response = await fetch(`/api/data?group=${group}`);
+        const data = await response.json();
+        return(data.data);
+    }   catch(error)    {
+        console.log(`Error fetching ${group} data:`, error);
+    }
+}
+
+// Pass a substring and returns the last row from the db with the substring
+async function fetchDataSingular(substr)    {
+    try{
+        const response = await fetch(`/api/data?id=${substr}`);
+        const data = await response.json();
+        console.log(data.data);
+        return(data.data);
+    }   catch(error)    {
+        console.log(`Error fetching ${substr} data:`, error);
+    }
+}
+
 // -- Chart functions --
 // C: Creates ??datasets??
 function createDatasets(data, motors) { 
@@ -27,11 +50,11 @@ function createDatasets(data, motors) {
         // Filter data for the current motor
         const motorData = data.filter(row => {
             const isMotor = isMotorNodeId(row.NodeId, motor);
-            console.log(`Checking NodeId ${row.NodeId} for Motor ${motor}: ${isMotor}`);
+            //console.log(`Checking NodeId ${row.NodeId} for Motor ${motor}: ${isMotor}`);
             return isMotor;
         });
 
-        console.log(`Filtered data for ${motor}:`, motorData);
+        //console.log(`Filtered data for ${motor}:`, motorData);
         
         if (motorData.length > 0) {
             datasets.push({
@@ -44,7 +67,7 @@ function createDatasets(data, motors) {
         }
     });
 
-    console.log('Final datasets:', datasets);
+    //console.log('Final datasets:', datasets);
 
     return datasets;
 }
@@ -317,7 +340,7 @@ function updateCycleCountValues(data) {
 
 function findLatestValue(filteredData)  {
     let latestValue = 0;
-    for(time_t0 = 0, i = 0; i < filteredData.length; i++)    {
+    for(let time_t0 = 0, i = 0; i < filteredData.length; i++)    {
         let time_t1 = filteredData[i].ServerTimeStamp;
         if(time_t1 > time_t0)
             latestValue = filteredData[i].Value;

@@ -52,9 +52,14 @@
             // then the client has to filter it.
             */
             CurrentData = await fetchDataGroup('Current');
+            CurrentData.reverse();
             filterUpdateCurrentChart(CurrentData);
+
             MAXCURData = await fetchDataGroup('MAXCUR');
+            MAXCURData.reverse();
             filterUpdateMaxcurChart(MAXCURData);
+
+            fetchDataSingular('Current1');
             updateCurrentValues(CurrentData);
         });
 

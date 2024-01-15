@@ -43,10 +43,13 @@
             // then the client has to filter it.
             */
             CYCCNTData = await fetchDataGroup('CYCCNT');
+            CYCCNTData.reverse();
             filterUpdateCYCCNTCharts(CYCCNTData);
-            CycleCountData = await fetchDataGroup('CycleCount')
+
+            CycleCountData = await fetchDataGroup('CycleCount');
+            CycleCountData.reverse();
             filterUpdateCycleCountCharts(CycleCountData);
-            console.log(CYCCNTData);
+            
             updateCycleCountValues(CYCCNTData);
         })
 
