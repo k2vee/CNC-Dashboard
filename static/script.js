@@ -1,3 +1,4 @@
+// -- API functions --
 // Pass the group of data requested and returns it
 async function fetchDataGroup(group)    {
     try{
@@ -10,22 +11,21 @@ async function fetchDataGroup(group)    {
 }
 
 // Pass the group of data requested and returns the latest 100 rows from db
-async function fetchDataGroupLimited(group) {
+async function fetchDataGroupLimited(group, limit) {
     try{
-        const response = await fetch(`/api/data?group=${group}`);
+        const response = await fetch(`/api/data?group=${group}&limit=${limit}`);
         const data = await response.json();
         return(data.data);
     }   catch(error)    {
-        console.log(`Error fetching ${group} data:`, error);
+        console.log(`Error fetching ${group} data with limit ${limit}:`, error);
     }
 }
 
 // Pass a substring and returns the last row from the db with the substring
 async function fetchDataSingular(substr)    {
     try{
-        const response = await fetch(`/api/data?id=${substr}`);
+        const response = await fetch(`/api/data/live?id=${substr}`);
         const data = await response.json();
-        console.log(data.data);
         return(data.data);
     }   catch(error)    {
         console.log(`Error fetching ${substr} data:`, error);
@@ -132,133 +132,43 @@ function createLineChart(canvasId, labels, datasets, chartTitle) {
     });
 }
 
-// Function that destroys current chart and creates a new one
-function updateLineChart(data, chartId, chartTitle) {
-    // Get the canvas element
-    const canvas = document.getElementById(chartId);
+function addLineChartData(canvasId, label, newData)  {
+    const canvas = document.getElementById(canvasId);
     const ctx = canvas.getContext('2d');
-
     // Find the existing instance of the chart with the same canvas ID
-    const existingChart = Chart.getChart(ctx);
+    const chart = Chart.getChart(ctx);
 
-    // Destroy the existing chart with the same canvas ID
-    if (existingChart) {
-        existingChart.destroy();
-    }
-
-    // Check if data is defined and has a valid length
-    if (data && data.length > 0) {
-        // Extract data for the chart
-        const labels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
-
-        // Create datasets based on the selected motors
-        const datasets = [];
-
-        // Define motor selection
-        const motorSelection = {
-            X: document.getElementById('buttonX').classList.contains('selected-button'),
-            Y: document.getElementById('buttonY').classList.contains('selected-button'),
-            Z: document.getElementById('buttonZ').classList.contains('selected-button'),
-            Spindle: document.getElementById('buttonSpindle').classList.contains('selected-button'),
-        };
-
-        // Example: Group into X, Y, Z, and Spindle motors based on selection
-        const groupedData = {
-            X: motorSelection.X ? data.filter(row => [2, 6, 7, 9, 12, 15, 18, 21, 30, 33, 36, 39].includes(row.NodeKey)) : [],
-            Y: motorSelection.Y ? data.filter(row => [1, 3, 10, 13, 16, 19, 22, 31, 34, 37, 40, 42].includes(row.NodeKey)) : [],
-            Z: motorSelection.Z ? data.filter(row => [4, 5, 8, 11, 14, 17, 20, 23, 32, 35, 38, 41].includes(row.NodeKey)) : [],
-            Spindle: motorSelection.Spindle ? data.filter(row => [24, 25, 26, 27, 28, 29, 43, 44, 45].includes(row.NodeKey)) : [],
-        };
-        console.log(groupedData);
-        // Create a dataset for each selected motor
-        const colors = {
-            X: '#FFC3A0', // Soft green-blue
-            Y: '#A0FFC3', // Soft orange
-            Z: '#A0C3FF', // Soft lavender
-            Spindle: '#e78ac3', // Soft pink
-        };
+    const colors = {
+        X: '#FFC3A0', // Soft green-blue
+        Y: '#A0FFC3', // Soft orange
+        Z: '#A0C3FF', // Soft lavender
+        Spindle: '#e78ac3', // Soft pink
+    };
+    
+    if(label.includes('X'))
+        chart.data.datasets[0].data.push(newData.value);
+    else if(label.includes('Y'))
+        chart.data.datasets[1].data.push(newData.value);
+    else if(label.includes['Z'])
+        chart.data.datasets[2].data.push(newData.value);
+    else
+        chart.data.datasets[3].data.push(newData.value);
         
-        for (const motor in data) {
-            if (data[motor].length > 0) {
-                const values = data[motor].map(row => row.Value);
-                datasets.push({
-                    label: `Motor ${motor}`,
-                    borderColor: colors[motor],
-                    data: values,
-                });
-            }
-        }
-
-        // Create line chart with datasets and animation
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: datasets,
-            },
-            options: {
-                scales: {
-                    x: {
-                        type: 'linear',
-                        position: 'bottom',
-                        ticks: {
-                            color: 'white', // Set x-axis label color
-                        },
-                    },
-                    y: {
-                        type: 'linear',
-                        position: 'left',
-                        ticks: {
-                            color: 'white', // Set y-axis label color
-                        },
-                    },
-                },
-                animation: {
-                    duration: 400, // Set the duration of the animation in milliseconds
-                    easing: 'easeInOutQuad', // Set the easing function for the animation
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: chartTitle, // Update title here
-                        color: '#fff', // Set title text color
-                        font: {
-                            size: 22, // Set the font size for the title
-                        },
-                    },
-                    legend: {
-                        labels: {
-                            color: '#fff', // Set legend text color
-                        },
-                    },
-                },
-            },
-        });
-
-    } else {
-        // If no data, clear the line chart
-        clearLineChart(chartId);
-    }
-    // Clear existing gauges
-    //clearGauges();
-
-    // Extract speed values for motors X, Y, and Z
-    //const speedX = data.find(row => row.NodeKey === 36)?.Value || 0;
-    //const speedY = data.find(row => row.NodeKey === 37)?.Value || 0;
-    //const speedZ = data.find(row => row.NodeKey === 38)?.Value || 0;
-
-    // Update or create speedometer gauges
-    //updateSpeedometerGauges(speedX, speedY, speedZ);
+    chart.data.labels.push((chart.data.labels.length) + 1);
+    chart.update();
 }
 
-// Function to clear the line chart
-function clearLineChart(chartId) {
-    // Get the canvas element
-    const canvas = document.getElementById(chartId);
+function removeLineChartData(canvasId)  {
+    const canvas = document.getElementById(canvasId);
     const ctx = canvas.getContext('2d');
+    // Find the existing instance of the chart with the same canvas ID
+    const chart = Chart.getChart(ctx);
 
-    // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    chart.data.labels.pop();
+    chart.data.datasets.forEach((dataset) => {
+        dataset.data.pop();
+    });
+    chart.update();
 }
 
 // -- Filtering Functions --
@@ -268,8 +178,6 @@ function toggleMotorSelection(canvasId, data, chartTitle) {
     const selectedData = getSelectedData(data);
     const dataset = createDatasets(selectedData, getSelectedMotors());
     const labels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
-
-    //updateLineChart(selectedData, chartId, chartTitle);
     createLineChart(canvasId, labels, dataset, chartTitle);
 }
 

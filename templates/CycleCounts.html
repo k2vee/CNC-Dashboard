@@ -42,11 +42,11 @@
             // Ideally, the data is already filtered server-side so the entire database isnt passed to client,
             // then the client has to filter it.
             */
-            CYCCNTData = await fetchDataGroup('CYCCNT');
+            CYCCNTData = await fetchDataGroupLimited('CYCCNT', 100);
             CYCCNTData.reverse();
             filterUpdateCYCCNTCharts(CYCCNTData);
 
-            CycleCountData = await fetchDataGroup('CycleCount');
+            CycleCountData = await fetchDataGroupLimited('CycleCount', 100);
             CycleCountData.reverse();
             filterUpdateCycleCountCharts(CycleCountData);
             

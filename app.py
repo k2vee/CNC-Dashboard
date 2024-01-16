@@ -13,82 +13,6 @@ def get_db():
         db = g._database = sqlite3.connect(database_file)
     return db
 
-def fetch_by_group_limit(group):
-    cursor = get_db().cursor()
-
-    # Fetch NodeKey-to-NodeId mapping
-    node_key_mapping = fetch_node_key_to_node_id_mapping()
-
-    query = 'SELECT * FROM HistoricalData'
-    if group != 'All':
-        # Passes dict of node_key & node_id, swaps them around, smooshes keys with the same id into an associated list inside a dict,
-        # then filters to specified 'group' (key), storing values (list of node_keys) as 'group_node_keys' 
-        group_node_keys = generate_group_node_keys(
-            node_key_mapping).get(group, [])
-        # C: Validity check/check if empty
-        if group_node_keys:
-            # Enclose each node key in single quotes
-            node_keys_str = ', '.join(map(lambda x: f"'{x}'", group_node_keys))
-            query += f" WHERE NodeKey IN ({node_keys_str}) ORDER BY rowid DESC LIMIT 100"
-
-    cursor.execute(query)
-    rows = cursor.fetchall()
-
-    # Map NodeKey to NodeId
-    data = []
-    for row in rows:
-        node_key = row[0]
-        node_id = node_key_mapping.get(node_key)
-        if node_id:
-            # Appending a new dictionary for every row
-            data.append({
-                'NodeKey': node_key,
-                'NodeId': node_id,
-                'Value': row[1],
-                'Datatype': row[2],
-                'Size': row[3],
-                'Quality': row[4],
-                'SourceTimeStamp': row[5],
-                'ServerTimeStamp': row[6]
-            })
-    return data    
-
-def fetch_by_singular(id):
-    # Put id/substring in a sequence to pass into cursor.execute
-    id = '%' + id + '%';
-    param = (id,)
-    cursor = get_db().cursor()
-
-    # Get the NodeKey for the NodeId that has the substring 'id'
-    query = 'SELECT NodeKey FROM NodeIdKey WHERE NodeId LIKE ?'
-    cursor.execute(query, param)
-    rows = cursor.fetchall()
-
-    # Get the row for which NodeId corresponds to NodeKey
-    query = f'SELECT * FROM HistoricalData WHERE NodeKey = ({rows[0][0]}) ORDER BY rowid DESC LIMIT 1'
-    cursor.execute(query)
-    rows = cursor.fetchall()
-    
-    node_key_mapping = fetch_node_key_to_node_id_mapping()
-    # Map NodeKey to NodeId
-    data = []
-    for row in rows:
-        node_key = row[0]
-        node_id = node_key_mapping.get(node_key)
-        if node_id:
-            # Appending a new dictionary for every row
-            data.append({
-                'NodeKey': node_key,
-                'NodeId': node_id,
-                'Value': row[1],
-                'Datatype': row[2],
-                'Size': row[3],
-                'Quality': row[4],
-                'SourceTimeStamp': row[5],
-                'ServerTimeStamp': row[6]
-            })
-    return data
-
 # Function to fetch data based on group
 def fetch_by_group(group):
     cursor = get_db().cursor()
@@ -119,6 +43,85 @@ def fetch_by_group(group):
         node_id = node_key_mapping.get(node_key)
         if node_id:
             # C: Appending a new dictionary for every row???
+            data.append({
+                'NodeKey': node_key,
+                'NodeId': node_id,
+                'Value': row[1],
+                'Datatype': row[2],
+                'Size': row[3],
+                'Quality': row[4],
+                'SourceTimeStamp': row[5],
+                'ServerTimeStamp': row[6]
+            })
+    return data
+
+def fetch_by_group_limit(group, limit):
+    cursor = get_db().cursor()
+    param = (limit,)
+
+    # Fetch NodeKey-to-NodeId mapping
+    node_key_mapping = fetch_node_key_to_node_id_mapping()
+
+    query = 'SELECT * FROM HistoricalData'
+    if group != 'All':
+        # Passes dict of node_key & node_id, swaps them around, smooshes keys with the same id into an associated list inside a dict,
+        # then filters to specified 'group' (key), storing values (list of node_keys) as 'group_node_keys' 
+        group_node_keys = generate_group_node_keys(
+            node_key_mapping).get(group, [])
+        # C: Validity check/check if empty
+        if group_node_keys:
+            # Enclose each node key in single quotes
+            node_keys_str = ', '.join(map(lambda x: f"'{x}'", group_node_keys))
+            query += f" WHERE NodeKey IN ({node_keys_str}) ORDER BY rowid DESC LIMIT ?"
+            cursor.execute(query, param)
+    else:
+        cursor.execute(query)
+
+    rows = cursor.fetchall()
+
+    # Map NodeKey to NodeId
+    data = []
+    for row in rows:
+        node_key = row[0]
+        node_id = node_key_mapping.get(node_key)
+        if node_id:
+            # Appending a new dictionary for every row
+            data.append({
+                'NodeKey': node_key,
+                'NodeId': node_id,
+                'Value': row[1],
+                'Datatype': row[2],
+                'Size': row[3],
+                'Quality': row[4],
+                'SourceTimeStamp': row[5],
+                'ServerTimeStamp': row[6]
+            })
+    return data    
+
+def fetch_by_singular(substr):
+    # Put substring in a sequence to pass into cursor.execute
+    substr = '%' + substr + '%'
+    param = (substr,)
+    cursor = get_db().cursor()
+
+    # Get the NodeKey for the NodeId that has the substring
+    query = 'SELECT NodeKey FROM NodeIdKey WHERE NodeId LIKE ?'
+    cursor.execute(query, param)
+    rows = cursor.fetchall()
+
+    # Get the row for which NodeId corresponds to NodeKey
+    query = f'SELECT * FROM HistoricalData WHERE NodeKey = ({rows[0][0]}) ORDER BY rowid DESC LIMIT 1'
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    
+    node_key_mapping = fetch_node_key_to_node_id_mapping()
+    # Map NodeKey to NodeId
+    data = []
+    for row in rows:
+        node_key = row[0]
+        node_id = node_key_mapping.get(node_key)
+        if node_id:
+            # Appending a new dictionary for every row
             data.append({
                 'NodeKey': node_key,
                 'NodeId': node_id,
@@ -247,21 +250,31 @@ def CycleCounts():
     print("Accessed the '/CycleCounts' route.")
     return render_template('CycleCounts.html')
 
+# --- API endpoints ---
 @app.route('/api/data')
 def get_group_data():
     print("Accessed the '/api/data' route.")
 
-    # Get group parameter from the query string
+    # Get group and limit parameter from the query string
     group = request.args.get('group')
-    id = request.args.get('id')
-
-    if group:
-        # Fetch values from the updated database based on the selected group
-        data = fetch_by_group_limit(group)
-    elif id:
-        data = fetch_by_singular(id)
+    limit = request.args.get('limit')
+    print(limit)
+    if limit:
+        data = fetch_by_group_limit(group, limit)
     else:
-        return Response("No parameters submitted!", status=400)
+        data = fetch_by_group(group)
+
+    print("Data fetched. Converting to JSON.")
+    # Return JSON response with both data and field_groups
+    return jsonify(data=data)
+
+@app.route('/api/data/live')
+def get_latest_data():
+    print("Accessed the '/api/data/live' route.")
+
+    # Get substring/id parameter from the query string
+    id = request.args.get('id')
+    data = fetch_by_singular(id)
 
     print("Data fetched. Converting to JSON.")
     # Return JSON response with both data and field_groups

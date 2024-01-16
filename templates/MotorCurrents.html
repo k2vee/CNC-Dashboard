@@ -38,6 +38,8 @@
             <canvas id="maxCurChart"></canvas>
         </div>
     </div>
+    <button style="background-color: aqua;" onclick="addLineChartData(currentChartId, 'Motor X', await fetchDataSingular('Current1'))"> update button </button>
+    <button style="background-color:darkviolet;" onclick="removeLineChartData(currentChartId)"> remove button </button>
 {% endblock %}
 {% block script %}
     <script>
@@ -51,15 +53,14 @@
             // Ideally, the data is already filtered server-side so the entire database isnt passed to client,
             // then the client has to filter it.
             */
-            CurrentData = await fetchDataGroup('Current');
+            CurrentData = await fetchDataGroupLimited('Current', 100);
             CurrentData.reverse();
             filterUpdateCurrentChart(CurrentData);
 
-            MAXCURData = await fetchDataGroup('MAXCUR');
+            MAXCURData = await fetchDataGroupLimited('MAXCUR', 100);
             MAXCURData.reverse();
             filterUpdateMaxcurChart(MAXCURData);
 
-            fetchDataSingular('Current1');
             updateCurrentValues(CurrentData);
         });
 
