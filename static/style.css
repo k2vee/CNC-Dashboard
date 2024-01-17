@@ -47,11 +47,12 @@ table {
     width: 100%;
 }
 
-th, td {
+th,
+td {
     border: 1px solid #ddd;
     padding: 8px;
     text-align: left;
-    
+
 }
 
 th {
@@ -86,15 +87,15 @@ button:hover {
     color: black;
 }
 
-.motor-button   {
+.motor-button {
     background-color: orangered;
 }
 
-.selected-button    {
+.selected-button {
     background-color: #23d66e;
 }
 
-#latestValues  {
+#latestValues {
     display: inline grid;
     grid-template-columns: 50% 50%;
     background-color: #444;
@@ -112,7 +113,7 @@ button:hover {
     /* Adjust the width as needed */
 }
 
-.chart-wrapper  {
+.chart-wrapper {
     background-color: #444;
     margin: 1%;
     border-radius: 2%;

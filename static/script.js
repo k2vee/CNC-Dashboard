@@ -1,40 +1,40 @@
 // -- API functions --
 // Pass the group of data requested and returns it
-async function fetchDataGroup(group)    {
-    try{
+async function fetchDataGroup(group) {
+    try {
         const response = await fetch(`/api/data?group=${group}`);
         const data = await response.json();
-        return(data.data);
-    }   catch(error)    {
+        return (data.data);
+    } catch (error) {
         console.log(`Error fetching ${group} data:`, error);
     }
 }
 
 // Pass the group of data requested and returns the latest 100 rows from db
 async function fetchDataGroupLimited(group, limit) {
-    try{
+    try {
         const response = await fetch(`/api/data?group=${group}&limit=${limit}`);
         const data = await response.json();
-        return(data.data);
-    }   catch(error)    {
+        return (data.data);
+    } catch (error) {
         console.log(`Error fetching ${group} data with limit ${limit}:`, error);
     }
 }
 
 // Pass a substring and returns the last row from the db with the substring
-async function fetchDataSingular(substr)    {
-    try{
+async function fetchDataSingular(substr) {
+    try {
         const response = await fetch(`/api/data/live?id=${substr}`);
         const data = await response.json();
-        return(data.data);
-    }   catch(error)    {
+        return (data.data);
+    } catch (error) {
         console.log(`Error fetching ${substr} data:`, error);
     }
 }
 
 // -- Chart functions --
 // C: Creates ??datasets??
-function createDatasets(data, motors) { 
+function createDatasets(data, motors) {
     const datasets = [];
 
     // Colors for each
@@ -46,7 +46,7 @@ function createDatasets(data, motors) {
     };
 
     // Splits motor data 
-    motors.forEach((motor, index) => {
+    motors.forEach((motor) => {
         // Filter data for the current motor
         const motorData = data.filter(row => {
             const isMotor = isMotorNodeId(row.NodeId, motor);
@@ -55,7 +55,7 @@ function createDatasets(data, motors) {
         });
 
         //console.log(`Filtered data for ${motor}:`, motorData);
-        
+
         if (motorData.length > 0) {
             datasets.push({
                 label: `Motor ${motor}`,
@@ -132,33 +132,26 @@ function createLineChart(canvasId, labels, datasets, chartTitle) {
     });
 }
 
-function addLineChartData(canvasId, label, newData)  {
+function addLineChartData(canvasId, label, newData) {
     const canvas = document.getElementById(canvasId);
     const ctx = canvas.getContext('2d');
     // Find the existing instance of the chart with the same canvas ID
     const chart = Chart.getChart(ctx);
 
-    const colors = {
-        X: '#FFC3A0', // Soft green-blue
-        Y: '#A0FFC3', // Soft orange
-        Z: '#A0C3FF', // Soft lavender
-        Spindle: '#e78ac3', // Soft pink
-    };
-    
-    if(label.includes('X'))
-        chart.data.datasets[0].data.push(newData.value);
-    else if(label.includes('Y'))
-        chart.data.datasets[1].data.push(newData.value);
-    else if(label.includes['Z'])
-        chart.data.datasets[2].data.push(newData.value);
+    if (label.includes('X'))
+        chart.data.datasets[0].data.push(newData[0].Value);
+    else if (label.includes('Y'))
+        chart.data.datasets[1].data.push(newData[0].Value);
+    else if (label.includes['Z'])
+        chart.data.datasets[2].data.push(newData[0].Value);
     else
-        chart.data.datasets[3].data.push(newData.value);
-        
+        chart.data.datasets[3].data.push(newData[0].Value);
+
     chart.data.labels.push((chart.data.labels.length) + 1);
     chart.update();
 }
 
-function removeLineChartData(canvasId)  {
+function removeLineChartData(canvasId) {
     const canvas = document.getElementById(canvasId);
     const ctx = canvas.getContext('2d');
     // Find the existing instance of the chart with the same canvas ID
@@ -188,15 +181,15 @@ function getSelectedData(data) {
     // Filter data based on selected motors
     const selectedData = data.filter(row => {
         let nodeIdInMotor;
-        for (let i = 0; i < selectedMotors.length; i++)   {
+        for (let i = 0; i < selectedMotors.length; i++) {
             nodeIdInMotor = isMotorNodeId(row.NodeId, selectedMotors[i]);
-            if(nodeIdInMotor)   {
+            if (nodeIdInMotor) {
                 return true;
             }
         }
         return false;
     });
-    
+
     return selectedData;
 }
 
@@ -209,7 +202,7 @@ function isMotorNodeId(nodeId, motor) {
     };
 
     // Check if motor is defined before accessing its properties
-    if (motor in motorMap)   {
+    if (motor in motorMap) {
         // If the nodeId is included in the associated motor list, return true. Otherwise, false.
         return motorMap[motor].some(v => nodeId.includes(v));
     }
@@ -217,11 +210,11 @@ function isMotorNodeId(nodeId, motor) {
     return false;
 }
 
-function getSelectedMotors()    {
-    return(['X', 'Y', 'Z', 'Spindle'].filter(motor => {
+function getSelectedMotors() {
+    return (['X', 'Y', 'Z', 'Spindle'].filter(motor => {
         const button = document.getElementById(`button${motor}`);
         return button.classList.contains('selected-button');
-    })); 
+    }));
 }
 
 // -- For updating latest values on each page --
@@ -246,11 +239,11 @@ function updateCycleCountValues(data) {
     //document.getElementById('latest-Spindle').innerText = findLatestValue(data.filter(row => row.NodeId == `Current1`));
 }
 
-function findLatestValue(filteredData)  {
+function findLatestValue(filteredData) {
     let latestValue = 0;
-    for(let time_t0 = 0, i = 0; i < filteredData.length; i++)    {
+    for (let time_t0 = 0, i = 0; i < filteredData.length; i++) {
         let time_t1 = filteredData[i].ServerTimeStamp;
-        if(time_t1 > time_t0)
+        if (time_t1 > time_t0)
             latestValue = filteredData[i].Value;
         time_t0 = time_t1;
     }
@@ -258,7 +251,7 @@ function findLatestValue(filteredData)  {
 }
 
 // This function will remain unused
-function updateLatestValues(data, servoKey, spindleKey)   {
+function updateLatestValues(data, servoKey, spindleKey) {
     const XNewVal = findLatestValue(data.filter(row => row.NodeId == `${servoKey}1`));
     const YNewVal = findLatestValue(data.filter(row => row.NodeId == `${servoKey}2`));
     const ZNewVal = findLatestValue(data.filter(row => row.NodeId == `${servoKey}3`));
