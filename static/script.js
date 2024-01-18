@@ -142,7 +142,7 @@ function addLineChartData(canvasId, label, newData) {
         chart.data.datasets[0].data.push(newData[0].Value);
     else if (label.includes('Y'))
         chart.data.datasets[1].data.push(newData[0].Value);
-    else if (label.includes['Z'])
+    else if (label.includes('Z'))
         chart.data.datasets[2].data.push(newData[0].Value);
     else
         chart.data.datasets[3].data.push(newData[0].Value);

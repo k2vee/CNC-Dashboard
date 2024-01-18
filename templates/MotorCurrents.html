@@ -45,27 +45,25 @@
 <script>
     // Global vars/accessible data objects
     var CurrentData, MAXCURData;
+    var timerId;
     const currentCanvasId = 'currentChart';
     const maxCurCanvasId = 'maxCurChart';
-    
+
     // Event listeners
-    // Using arrow function to 'wrap' code other functions
-    document.getElementById("updateButton").addEventListener("click", async () => {
-        const data = await fetchDataSingular('Current1');
-        addLineChartData(currentCanvasId, 'Motor X', data);
-    }); 
     document.getElementById("removeButton").addEventListener("click", () => removeLineChartData(currentCanvasId));
     document.addEventListener('DOMContentLoaded', async () => {
-        CurrentData = await fetchDataGroupLimited('Current', 100);
+        CurrentData = await fetchDataGroupLimited('Current', 50);
         CurrentData.reverse();
         filterUpdateCurrentChart(CurrentData);
 
-        MAXCURData = await fetchDataGroupLimited('MAXCUR', 100);
+        MAXCURData = await fetchDataGroupLimited('MAXCUR', 50);
         MAXCURData.reverse();
         filterUpdateMaxcurChart(MAXCURData);
 
         updateCurrentValues(CurrentData);
+        timerId = setInterval(pollServer, 3000);
     });
+    document.addEventListener('')
 
     // Function to update the 'Current' line chart
     function filterUpdateCurrentChart(data) {
@@ -97,6 +95,15 @@
 
         toggleMotorSelection(currentCanvasId, CurrentData, 'Current');
         toggleMotorSelection(maxCurCanvasId, MAXCURData, 'MAXCUR');
+    }
+
+    async function pollServer() {
+        addLineChartData(currentCanvasId, 'Motor X', await fetchDataSingular('Current1'));
+        addLineChartData(currentCanvasId, 'Motor Y', await fetchDataSingular('Current2'));
+        addLineChartData(currentCanvasId, 'Motor Z', await fetchDataSingular('Current3'));
+        addLineChartData(maxCurCanvasId, 'Motor X', await fetchDataSingular('MAXCUR21'));
+        addLineChartData(maxCurCanvasId, 'Motor Y', await fetchDataSingular('MAXCUR22'));
+        addLineChartData(maxCurCanvasId, 'Motor Z', await fetchDataSingular('MAXCUR23'));
     }
 </script>
 {% endblock%}

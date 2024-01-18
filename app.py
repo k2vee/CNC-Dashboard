@@ -13,7 +13,7 @@ def get_db():
         db = g._database = sqlite3.connect(database_file)
     return db
 
-# Function to fetch data based on group
+# (DEPRECATED) Function to fetch data based on group
 def fetch_by_group(group):
     cursor = get_db().cursor()
 
@@ -55,9 +55,11 @@ def fetch_by_group(group):
             })
     return data
 
+# Function to fetch data based on group and limit the number of rows returned per NodeKey
 def fetch_by_group_limit(group, limit):
     cursor = get_db().cursor()
     param = (limit,)
+    rows = []
 
     # Fetch NodeKey-to-NodeId mapping
     node_key_mapping = fetch_node_key_to_node_id_mapping()
@@ -68,16 +70,14 @@ def fetch_by_group_limit(group, limit):
         # then filters to specified 'group' (key), storing values (list of node_keys) as 'group_node_keys' 
         group_node_keys = generate_group_node_keys(
             node_key_mapping).get(group, [])
-        # C: Validity check/check if empty
-        if group_node_keys:
-            # Enclose each node key in single quotes
-            node_keys_str = ', '.join(map(lambda x: f"'{x}'", group_node_keys))
-            query += f" WHERE NodeKey IN ({node_keys_str}) ORDER BY rowid DESC LIMIT ?"
-            cursor.execute(query, param)
+        # Enclose each node key in single quotes
+        #node_keys_str = ', '.join(map(lambda x: f"'{x}'", group_node_keys))
+        for nodeKey in group_node_keys:
+            modifiedQuery = query + f" WHERE NodeKey = ({nodeKey}) ORDER BY rowid DESC LIMIT ?"
+            for record in cursor.execute(modifiedQuery, param):
+                rows.append(record)
     else:
         cursor.execute(query)
-
-    rows = cursor.fetchall()
 
     # Map NodeKey to NodeId
     data = []
@@ -258,11 +258,12 @@ def get_group_data():
     # Get group and limit parameter from the query string
     group = request.args.get('group')
     limit = request.args.get('limit')
-    print(limit)
-    if limit:
-        data = fetch_by_group_limit(group, limit)
-    else:
-        data = fetch_by_group(group)
+    # If limit is omitted, set limit to negative number
+    # Passing a negative number as the limit in the query results in
+    # no upper bound on the number of rows returned
+    if not limit:
+        limit = -1
+    data = fetch_by_group_limit(group, limit)
 
     print("Data fetched. Converting to JSON.")
     # Return JSON response with both data and field_groups
