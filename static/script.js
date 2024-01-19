@@ -32,6 +32,16 @@ async function fetchDataSingular(substr) {
     }
 }
 
+async function fetchDataTable(nodeId)   {
+    try {
+        const response = await fetch(`/api/data/table?nodeId=${nodeId}`);
+        const data = await response.json();
+        return (data.data);
+    } catch (error) {
+        console.log(`Error fetching ${nodeId} data:`, error);
+    }
+}
+
 // -- Chart functions --
 // C: Creates ??datasets??
 function createDatasets(data, motors) {
@@ -132,36 +142,33 @@ function createLineChart(canvasId, labels, datasets, chartTitle) {
     });
 }
 
-function addLineChartData(canvasId, label, newData) {
+function shiftLineChartData(canvasId, label, newData) {
     const canvas = document.getElementById(canvasId);
     const ctx = canvas.getContext('2d');
     // Find the existing instance of the chart with the same canvas ID
     const chart = Chart.getChart(ctx);
 
-    if (label.includes('X'))
+    if (label.includes('X'))    {
         chart.data.datasets[0].data.push(newData[0].Value);
-    else if (label.includes('Y'))
+        chart.data.datasets[0].data.shift();
+    }   else if (label.includes('Y'))   {
         chart.data.datasets[1].data.push(newData[0].Value);
-    else if (label.includes('Z'))
+        chart.data.datasets[1].data.shift();
+    }   else if (label.includes('Z'))   {
         chart.data.datasets[2].data.push(newData[0].Value);
-    else
+        chart.data.datasets[2].data.shift();
+    }   else    {
         chart.data.datasets[3].data.push(newData[0].Value);
-
-    chart.data.labels.push((chart.data.labels.length) + 1);
+        chart.data.datasets[3].data.shift();
+    }    
     chart.update();
 }
 
-function removeLineChartData(canvasId) {
-    const canvas = document.getElementById(canvasId);
-    const ctx = canvas.getContext('2d');
-    // Find the existing instance of the chart with the same canvas ID
-    const chart = Chart.getChart(ctx);
-
-    chart.data.labels.pop();
-    chart.data.datasets.forEach((dataset) => {
-        dataset.data.pop();
-    });
-    chart.update();
+function datasetFilter()    {
+    const filteredMotors = getSelectedMotors();
+        for(var i = 0; i < filteredMotors.length; i++)  {
+            
+        }
 }
 
 // -- Filtering Functions --
@@ -169,6 +176,7 @@ function removeLineChartData(canvasId) {
 function toggleMotorSelection(canvasId, data, chartTitle) {
     // Update the line chart with the selected data
     const selectedData = getSelectedData(data);
+    console.log('toggleMOtorselection: ', selectedData);
     const dataset = createDatasets(selectedData, getSelectedMotors());
     const labels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
     createLineChart(canvasId, labels, dataset, chartTitle);
@@ -177,7 +185,7 @@ function toggleMotorSelection(canvasId, data, chartTitle) {
 // Function to get selected data based on button states
 function getSelectedData(data) {
     const selectedMotors = getSelectedMotors();
-
+    console.log('getSelectedData: ', selectedMotors);
     // Filter data based on selected motors
     const selectedData = data.filter(row => {
         let nodeIdInMotor;
@@ -201,6 +209,7 @@ function isMotorNodeId(nodeId, motor) {
         Spindle: ['SpindleMonitor_Gain1', 'SpindleMonitor_Droop1', 'LEDDisplay1', 'ControlInput11', 'ControlOutput11', 'ControlOutput41', 'CycleCount1', 'ControlOutput21', 'Load1'] // Include the node key for the 'Spindle' motor
     };
 
+    console.log('ismotornodeId: ', nodeId);
     // Check if motor is defined before accessing its properties
     if (motor in motorMap) {
         // If the nodeId is included in the associated motor list, return true. Otherwise, false.

@@ -49,11 +49,11 @@
 {% endblock %}
 {% block script %}
     <script>        
-        // C: This function is fine I think
         async function updateTable() {
             // request db data from server
             const selectedNodeId = document.getElementById('nodeId').value;
-            const data = await fetchDataGroup(selectedNodeId);
+            console.log(selectedNodeId);
+            const data = await fetchDataTable(selectedNodeId);
 
             const tbody = document.getElementById('data-table').getElementsByTagName('tbody')[0];
             tbody.innerHTML = '';

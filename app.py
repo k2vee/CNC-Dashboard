@@ -13,28 +13,23 @@ def get_db():
         db = g._database = sqlite3.connect(database_file)
     return db
 
-# (DEPRECATED) Function to fetch data based on group
-def fetch_by_group(group):
+# Function to get data by nodeId
+def fetch_by_nodeId(nodeId):
     cursor = get_db().cursor()
+    param = (nodeId,)
 
-    # Fetch NodeKey-to-NodeId mapping
-    node_key_mapping = fetch_node_key_to_node_id_mapping()
+    # Get the NodeKey for the NodeId
+    query = 'SELECT NodeKey FROM NodeIdKey WHERE NodeId LIKE ?'
+    cursor.execute(query, param)
+    rows = cursor.fetchall()
+    print(param, ":", rows)
 
-    query = 'SELECT * FROM HistoricalData'
-    if group != 'All':
-        # Passes dict of node_key & node_id, swaps them around, smooshes keys with the same id into an associated list inside a dict,
-        # then filters to specified 'group' (key), storing values (list of node_keys) as 'group_node_keys' 
-        group_node_keys = generate_group_node_keys(
-            node_key_mapping).get(group, [])
-        # Validity check/check if empty
-        if group_node_keys:
-            # Enclose each node key in single quotes
-            node_keys_str = ', '.join(map(lambda x: f"'{x}'", group_node_keys))
-            query += f" WHERE NodeKey IN ({node_keys_str})"
-
+    # Get the row for which NodeId corresponds to NodeKey
+    query = f'SELECT * FROM HistoricalData WHERE NodeKey = ({rows[0][0]})'
     cursor.execute(query)
     rows = cursor.fetchall()
 
+    node_key_mapping = fetch_node_key_to_node_id_mapping()
     # Map NodeKey to NodeId
     data = []
     for row in rows:
@@ -78,6 +73,7 @@ def fetch_by_group_limit(group, limit):
                 rows.append(record)
     else:
         cursor.execute(query)
+        rows = cursor.fetchall()
 
     # Map NodeKey to NodeId
     data = []
@@ -232,7 +228,7 @@ def Table():
 
     # To resolve: This can be better optimized, don't have to fetch the entire db everytime
     # Fetch values from the updated database
-    data = fetch_by_group('All')
+    data = fetch_by_group_limit('All', -1)
     # Fetch field groups from the database
     field_groups = fetch_field_groups()
     print("Data fetched. Rendering template.")
@@ -276,6 +272,18 @@ def get_latest_data():
     # Get substring/id parameter from the query string
     id = request.args.get('id')
     data = fetch_by_singular(id)
+
+    print("Data fetched. Converting to JSON.")
+    # Return JSON response with both data and field_groups
+    return jsonify(data=data)
+
+@app.route('/api/data/table')
+def get_table_data():
+    print("Accessed the '/api/data/live' route.")
+
+    # Get substring/id parameter from the query string
+    nodeId = request.args.get('nodeId')
+    data = fetch_by_nodeId(nodeId)
 
     print("Data fetched. Converting to JSON.")
     # Return JSON response with both data and field_groups

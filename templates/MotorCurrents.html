@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
 <div id="motorSelectionButtons">
-    <button id="buttonX" class="motor-button selected-button" onclick="aeiou('X')">
+    <button id="buttonX" class="motor-button" onclick="aeiou('X')">
         Motor X</button>
-    <button id="buttonY" class="motor-button selected-button" onclick="aeiou('Y')">
+    <button id="buttonY" class="motor-button" onclick="aeiou('Y')">
         Motor Y</button>
-    <button id="buttonZ" class="motor-button selected-button" onclick="aeiou('Z')">
+    <button id="buttonZ" class="motor-button" onclick="aeiou('Z')">
         Motor Z</button>
-    <button id="buttonSpindle" class="motor-button selected-button" onclick="aeiou('Spindle')">
+    <button id="buttonSpindle" class="motor-button" onclick="aeiou('Spindle')">
         Spindle</button>
 </div>
 <div id="latestValues">
@@ -63,7 +63,6 @@
         updateCurrentValues(CurrentData);
         timerId = setInterval(pollServer, 3000);
     });
-    document.addEventListener('')
 
     // Function to update the 'Current' line chart
     function filterUpdateCurrentChart(data) {
@@ -93,17 +92,25 @@
         const button = document.getElementById(`button${motor}`);
         button.classList.toggle("selected-button");
 
-        toggleMotorSelection(currentCanvasId, CurrentData, 'Current');
-        toggleMotorSelection(maxCurCanvasId, MAXCURData, 'MAXCUR');
+        datasetFilter()
+        //toggleMotorSelection(currentCanvasId, CurrentData, 'Current');
+        //toggleMotorSelection(maxCurCanvasId, MAXCURData, 'MAXCUR');
     }
 
     async function pollServer() {
-        addLineChartData(currentCanvasId, 'Motor X', await fetchDataSingular('Current1'));
-        addLineChartData(currentCanvasId, 'Motor Y', await fetchDataSingular('Current2'));
-        addLineChartData(currentCanvasId, 'Motor Z', await fetchDataSingular('Current3'));
-        addLineChartData(maxCurCanvasId, 'Motor X', await fetchDataSingular('MAXCUR21'));
-        addLineChartData(maxCurCanvasId, 'Motor Y', await fetchDataSingular('MAXCUR22'));
-        addLineChartData(maxCurCanvasId, 'Motor Z', await fetchDataSingular('MAXCUR23'));
+        const alphabetArray = ['X', 'Y', 'Z'];
+        for(var i = 0; i < 3; i++)  {
+            const latestRecord = await fetchDataSingular(`Current${i+1}`);
+            CurrentData.shift();
+            CurrentData.push(latestRecord);
+            shiftLineChartData(currentCanvasId, `Motor ${alphabetArray[i]}`, latestRecord);
+        }
+        for(var i = 0; i < 3; i++)  {
+            const latestRecord = await fetchDataSingular(`MAXCUR2${i+1}`);
+            MAXCURData.shift();
+            MAXCURData.push(latestRecord);
+            shiftLineChartData(maxCurCanvasId, `Motor ${alphabetArray[i]}`, latestRecord);
+        }
     }
 </script>
 {% endblock%}
