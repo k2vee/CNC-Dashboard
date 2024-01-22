@@ -1,33 +1,33 @@
 {% extends 'base.html' %}
 {% block content %}
 <div id="motorSelectionButtons">
-    <button id="buttonX" class="motor-button" onclick="aeiou('X')">
+    <button id="buttonX" class="motor-button selected-button">
         Motor X</button>
-    <button id="buttonY" class="motor-button" onclick="aeiou('Y')">
+    <button id="buttonY" class="motor-button selected-button">
         Motor Y</button>
-    <button id="buttonZ" class="motor-button" onclick="aeiou('Z')">
+    <button id="buttonZ" class="motor-button selected-button">
         Motor Z</button>
-    <button id="buttonSpindle" class="motor-button" onclick="aeiou('Spindle')">
+    <button id="buttonSpindle" class="motor-button selected-button">
         Spindle</button>
 </div>
 <div id="latestValues">
     <div class="chart-latestValues">
         <p class="valueTitle">Current</p>
         <p class="motorId">Motor X</p>
-        <p id="latest-X">0</p>
+        <p id="latest-X-chart1">0</p>
         <p class="motorId">Motor Y</p>
-        <p id="latest-Y">0</p>
+        <p id="latest-Y-chart1">0</p>
         <p class="motorId">Motor Z</p>
-        <p id="latest-Z">0</p>
+        <p id="latest-Z-chart1">0</p>
     </div>
     <div class="chart-latestValues">
         <p class="valueTitle">Maximum Currents</p>
         <p class="motorId">Motor X</p>
-        <p id="latest-X">0</p>
+        <p id="latest-X-chart2">0</p>
         <p class="motorId">Motor Y</p>
-        <p id="latest-Y">0</p>
+        <p id="latest-Y-chart2">0</p>
         <p class="motorId">Motor Z</p>
-        <p id="latest-Z">0</p>
+        <p id="latest-Z-chart2">0</p>
     </div>
 </div>
 <div id="currentGraphs" class="graph-container">
@@ -50,22 +50,22 @@
     const maxCurCanvasId = 'maxCurChart';
 
     // Event listeners
-    document.getElementById("removeButton").addEventListener("click", () => removeLineChartData(currentCanvasId));
+    document.getElementById("buttonX").addEventListener("click", () => onFilterButtonClick('X'));
+    document.getElementById("buttonY").addEventListener("click", () => onFilterButtonClick('Y'));
+    document.getElementById("buttonZ").addEventListener("click", () => onFilterButtonClick('Z'));
+    document.getElementById("buttonSpindle").addEventListener("click", () => onFilterButtonClick('Spindle'));
     document.addEventListener('DOMContentLoaded', async () => {
         CurrentData = await fetchDataGroupLimited('Current', 50);
         CurrentData.reverse();
-        filterUpdateCurrentChart(CurrentData);
-
+        createCurrentChart(CurrentData);
         MAXCURData = await fetchDataGroupLimited('MAXCUR', 50);
         MAXCURData.reverse();
-        filterUpdateMaxcurChart(MAXCURData);
-
-        updateCurrentValues(CurrentData);
-        timerId = setInterval(pollServer, 3000);
+        createMaxcurChart(MAXCURData);
+        timerId = setInterval(pollServer, 5000);
     });
 
     // Function to update the 'Current' line chart
-    function filterUpdateCurrentChart(data) {
+    function createCurrentChart(data) {
         const currentLabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
         CurrentData = data.filter(row => ['Current1', 'Current2', 'Current3'].some(v => row.NodeId.includes(v)));
         const currentDatasets = createDatasets(CurrentData, ['X', 'Y', 'Z']);
@@ -74,7 +74,7 @@
     }
 
     // Function to update the 'Current' line chart
-    function filterUpdateMaxcurChart(data) {
+    function createMaxcurChart(data) {
         const maxCurlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
         MAXCURData = data.filter(row => ['MAXCUR21', 'MAXCUR22', 'MAXCUR23'].some(v => row.NodeId.includes(v)));
         const maxCurDatasets = createDatasets(MAXCURData, ['X', 'Y', 'Z']);
@@ -82,19 +82,12 @@
         createLineChart(maxCurCanvasId, maxCurlabels, maxCurDatasets, 'MAXCUR');
     }
 
-    function aeiou(motor) {
-        /*
-        if (motor == 'Spindle')
-            toggleMotorSelection(motor, CurrentData);
-        else
-            toggleMotorSelection(motor, MAXCURData);
-        */
+    function onFilterButtonClick(motor) {
         const button = document.getElementById(`button${motor}`);
         button.classList.toggle("selected-button");
 
-        datasetFilter()
-        //toggleMotorSelection(currentCanvasId, CurrentData, 'Current');
-        //toggleMotorSelection(maxCurCanvasId, MAXCURData, 'MAXCUR');
+        datasetFilter(currentCanvasId, motor);
+        datasetFilter(maxCurCanvasId, motor);
     }
 
     async function pollServer() {
@@ -104,12 +97,14 @@
             CurrentData.shift();
             CurrentData.push(latestRecord);
             shiftLineChartData(currentCanvasId, `Motor ${alphabetArray[i]}`, latestRecord);
+            document.getElementById(`latest-${alphabetArray[i]}-chart1`).innerHTML = latestRecord[0].Value;
         }
         for(var i = 0; i < 3; i++)  {
             const latestRecord = await fetchDataSingular(`MAXCUR2${i+1}`);
             MAXCURData.shift();
             MAXCURData.push(latestRecord);
             shiftLineChartData(maxCurCanvasId, `Motor ${alphabetArray[i]}`, latestRecord);
+            document.getElementById(`latest-${alphabetArray[i]}-chart2`).innerHTML = latestRecord[0].Value;
         }
     }
 </script>

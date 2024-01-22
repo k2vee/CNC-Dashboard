@@ -164,43 +164,31 @@ function shiftLineChartData(canvasId, label, newData) {
     chart.update();
 }
 
-function datasetFilter()    {
-    const filteredMotors = getSelectedMotors();
-        for(var i = 0; i < filteredMotors.length; i++)  {
-            
-        }
+function datasetFilter(canvasId, button)    {
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    // Find the existing instance of the chart with the same canvas ID
+    const chart = Chart.getChart(ctx);
+    const chartDatasets = [];
+    // Create array to store types of datasets in chart using label
+    for(var i = 0; i < chart.data.datasets.length; i++)   {
+        chartDatasets.push(chart.data.datasets[i].label);
+    }
+    // Check if dataset specified by button exists in chart
+    // If doesn't exist, return
+    const datasetExists = chartDatasets.some(setType => setType.includes(button));
+    if(!datasetExists)
+        return
+    // Find index of dataset, then toggle visibility
+    const datasetIndex = chartDatasets.findIndex(setType => setType.includes(button));
+    if(chart.isDatasetVisible(datasetIndex))
+        chart.setDatasetVisibility(datasetIndex, false);
+    else
+        chart.setDatasetVisibility(datasetIndex, true);
+    chart.update();
 }
 
 // -- Filtering Functions --
-// Function to toggle motor selection
-function toggleMotorSelection(canvasId, data, chartTitle) {
-    // Update the line chart with the selected data
-    const selectedData = getSelectedData(data);
-    console.log('toggleMOtorselection: ', selectedData);
-    const dataset = createDatasets(selectedData, getSelectedMotors());
-    const labels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
-    createLineChart(canvasId, labels, dataset, chartTitle);
-}
-
-// Function to get selected data based on button states
-function getSelectedData(data) {
-    const selectedMotors = getSelectedMotors();
-    console.log('getSelectedData: ', selectedMotors);
-    // Filter data based on selected motors
-    const selectedData = data.filter(row => {
-        let nodeIdInMotor;
-        for (let i = 0; i < selectedMotors.length; i++) {
-            nodeIdInMotor = isMotorNodeId(row.NodeId, selectedMotors[i]);
-            if (nodeIdInMotor) {
-                return true;
-            }
-        }
-        return false;
-    });
-
-    return selectedData;
-}
-
 function isMotorNodeId(nodeId, motor) {
     const motorMap = {
         X: ['Current1', 'CYCCNT1', 'MAXCUR21', 'MACPOS1', 'MATPOS1', 'SCAPOS1', 'RemainCommand1', 'CurrentPosition1', 'ServoMonitor_Gain1', 'ServoMonitor_Droop1', 'Speed1'],
@@ -209,7 +197,6 @@ function isMotorNodeId(nodeId, motor) {
         Spindle: ['SpindleMonitor_Gain1', 'SpindleMonitor_Droop1', 'LEDDisplay1', 'ControlInput11', 'ControlOutput11', 'ControlOutput41', 'CycleCount1', 'ControlOutput21', 'Load1'] // Include the node key for the 'Spindle' motor
     };
 
-    console.log('ismotornodeId: ', nodeId);
     // Check if motor is defined before accessing its properties
     if (motor in motorMap) {
         // If the nodeId is included in the associated motor list, return true. Otherwise, false.
@@ -217,13 +204,6 @@ function isMotorNodeId(nodeId, motor) {
     }
 
     return false;
-}
-
-function getSelectedMotors() {
-    return (['X', 'Y', 'Z', 'Spindle'].filter(motor => {
-        const button = document.getElementById(`button${motor}`);
-        return button.classList.contains('selected-button');
-    }));
 }
 
 // -- For updating latest values on each page --
