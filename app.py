@@ -5,7 +5,7 @@ from markupsafe import escape
 app = Flask(__name__)
 
 # Path to SQLite database file
-database_file = r'5min run loop.dxpdb'
+database_file = r'HistoricalGroup5.dxpdb'
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -29,26 +29,10 @@ def fetch_by_nodeId(nodeId):
     cursor.execute(query)
     rows = cursor.fetchall()
 
-    node_key_mapping = fetch_node_key_to_node_id_mapping()
     # Map NodeKey to NodeId
-    data = []
-    for row in rows:
-        node_key = row[0]
-        # C: why (Edit: oh ok)
-        node_id = node_key_mapping.get(node_key)
-        if node_id:
-            # C: Appending a new dictionary for every row???
-            data.append({
-                'NodeKey': node_key,
-                'NodeId': node_id,
-                'Value': row[1],
-                'Datatype': row[2],
-                'Size': row[3],
-                'Quality': row[4],
-                'SourceTimeStamp': row[5],
-                'ServerTimeStamp': row[6]
-            })
-    return data
+    node_key_mapping = fetch_node_key_to_node_id_mapping()
+    data = formatData(rows, node_key_mapping)
+    return data 
 
 # Function to fetch data based on group and limit the number of rows returned per NodeKey
 def fetch_by_group_limit(group, limit):
@@ -76,22 +60,7 @@ def fetch_by_group_limit(group, limit):
         rows = cursor.fetchall()
 
     # Map NodeKey to NodeId
-    data = []
-    for row in rows:
-        node_key = row[0]
-        node_id = node_key_mapping.get(node_key)
-        if node_id:
-            # Appending a new dictionary for every row
-            data.append({
-                'NodeKey': node_key,
-                'NodeId': node_id,
-                'Value': row[1],
-                'Datatype': row[2],
-                'Size': row[3],
-                'Quality': row[4],
-                'SourceTimeStamp': row[5],
-                'ServerTimeStamp': row[6]
-            })
+    data = formatData(rows, node_key_mapping)
     return data    
 
 def fetch_by_singular(substr):
@@ -112,22 +81,7 @@ def fetch_by_singular(substr):
     
     node_key_mapping = fetch_node_key_to_node_id_mapping()
     # Map NodeKey to NodeId
-    data = []
-    for row in rows:
-        node_key = row[0]
-        node_id = node_key_mapping.get(node_key)
-        if node_id:
-            # Appending a new dictionary for every row
-            data.append({
-                'NodeKey': node_key,
-                'NodeId': node_id,
-                'Value': row[1],
-                'Datatype': row[2],
-                'Size': row[3],
-                'Quality': row[4],
-                'SourceTimeStamp': row[5],
-                'ServerTimeStamp': row[6]
-            })
+    data = formatData(rows, node_key_mapping)
     return data
 
 def fetch_node_key_to_node_id_mapping():
@@ -147,12 +101,10 @@ def fetch_field_groups():
 
     # Create a dictionary to store group names and associated NodeId values
     field_groups = {}
-
     for row in rows:
         if row[0] is not None:
             node_id = row[0]
             group = get_group_from_node_id(node_id)
-
             # Append NodeId to the corresponding group in the dictionary
             field_groups.setdefault(group, []).append(node_id)
     
@@ -210,6 +162,26 @@ def get_group_from_node_id(node_id):
 
     # If none of the conditions match, return a default value or raise an exception
     return 'UnknownGroup'
+
+def formatData(rows, nodeKeyMapping):
+    data = []
+    for row in rows:
+        value = float.fromhex(row[1].strip())
+        node_key = row[0]
+        node_id = nodeKeyMapping.get(node_key)
+        if node_id:
+            # Appending a new dictionary for every row
+            data.append({
+                'NodeKey': node_key,
+                'NodeId': node_id,
+                'Value': value,
+                'Datatype': row[2],
+                'Size': row[3],
+                'Quality': row[4],
+                'SourceTimeStamp': row[5],
+                'ServerTimeStamp': row[6]
+            })
+    return data
 
 @app.teardown_appcontext
 def close_connection(exception):
