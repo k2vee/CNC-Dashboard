@@ -174,7 +174,7 @@ function datasetFilter(canvasId, button)    {
     for(var i = 0; i < chart.data.datasets.length; i++)   {
         chartDatasets.push(chart.data.datasets[i].label);
     }
-    // Check if dataset specified by button exists in chart
+    // Check if dataset specified by button, as a substring, exists in chart
     // If doesn't exist, return
     const datasetExists = chartDatasets.some(setType => setType.includes(button));
     if(!datasetExists)
