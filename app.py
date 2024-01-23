@@ -166,21 +166,25 @@ def get_group_from_node_id(node_id):
 def formatData(rows, nodeKeyMapping):
     data = []
     for row in rows:
-        value = float.fromhex(row[1].strip())
-        node_key = row[0]
-        node_id = nodeKeyMapping.get(node_key)
-        if node_id:
-            # Appending a new dictionary for every row
-            data.append({
-                'NodeKey': node_key,
-                'NodeId': node_id,
-                'Value': value,
-                'Datatype': row[2],
-                'Size': row[3],
-                'Quality': row[4],
-                'SourceTimeStamp': row[5],
-                'ServerTimeStamp': row[6]
-            })
+        try:
+            value = float.fromhex(row[1].strip())
+        except:
+            value = 0
+        finally:
+            node_key = row[0]
+            node_id = nodeKeyMapping.get(node_key)
+            if node_id:
+                # Appending a new dictionary for every row
+                data.append({
+                    'NodeKey': node_key,
+                    'NodeId': node_id,
+                    'Value': value,
+                    'Datatype': row[2],
+                    'Size': row[3],
+                    'Quality': row[4],
+                    'SourceTimeStamp': row[5],
+                    'ServerTimeStamp': row[6]
+                })
     return data
 
 @app.teardown_appcontext
@@ -217,6 +221,26 @@ def MotorCurrents():
 def CycleCounts():
     print("Accessed the '/CycleCounts' route.")
     return render_template('CycleCounts.html')
+
+@app.route('/MotorPositions')
+def MotorPositions():
+    print("Accessed the '/MotorPositions' route.")
+    return render_template('MotorPositions.html')
+
+@app.route('/RemainCommand')
+def RemainCommand():
+    print("Accessed the '/RemainCommand' route.")
+    return render_template('RemainCommand.html')
+
+@app.route('/MotorDynamics')
+def MotorDynamics():
+    print("Accessed the '/MotorDynamics' route.")
+    return render_template('MotorDynamics.html')
+
+@app.route('/ControlInputOutput')
+def ControlInputOutput():
+    print("Accessed the '/ControlInputOutput' route.")
+    return render_template('ControlInputOutput.html')
 
 # --- API endpoints ---
 @app.route('/api/data')

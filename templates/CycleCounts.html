@@ -48,14 +48,14 @@
     document.getElementById("buttonY").addEventListener("click", () => onFilterButtonClick('Y'));
     document.getElementById("buttonZ").addEventListener("click", () => onFilterButtonClick('Z'));
     document.getElementById("buttonSpindle").addEventListener("click", () => onFilterButtonClick('Spindle'));
-    document.addEventListener('DOMContentLoaded', async function () {
-        CYCCNTData = await fetchDataGroupLimited('CYCCNT', 100);
+    document.addEventListener('DOMContentLoaded', async () => {
+        CYCCNTData = await fetchDataGroupLimited('CYCCNT', 50);
         CYCCNTData.reverse();
         createCYCCNTCharts(CYCCNTData);
-        CycleCountData = await fetchDataGroupLimited('CycleCount', 100);
+        CycleCountData = await fetchDataGroupLimited('CycleCount', 50);
         CycleCountData.reverse();
         createCycleCountCharts(CycleCountData);
-        timerId = setInterval(pollServer, 5000);
+        timerId = setInterval(pollServer, 1000);
     });
 
     // Function to update the 'CYCCNT' line chart

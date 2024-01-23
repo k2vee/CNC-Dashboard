@@ -158,8 +158,8 @@ function shiftLineChartData(canvasId, label, newData) {
         chart.data.datasets[2].data.push(newData[0].Value);
         chart.data.datasets[2].data.shift();
     }   else    {
-        chart.data.datasets[3].data.push(newData[0].Value);
-        chart.data.datasets[3].data.shift();
+        chart.data.datasets[0].data.push(newData[0].Value);
+        chart.data.datasets[0].data.shift();
     }    
     chart.update();
 }
