@@ -77,7 +77,6 @@
     function onFilterButtonClick(motor) {
         const button = document.getElementById(`button${motor}`);
         button.classList.toggle("selected-button");
-
         datasetFilter(cycleCountsCanvasId, motor);
         datasetFilter(cycleCountsSpindleCanvasId, motor);
     }
@@ -88,14 +87,14 @@
             const latestRecord = await fetchDataSingular(`CYCCNT${i+1}`);
             CYCCNTData.shift();
             CYCCNTData.push(latestRecord);
-            shiftLineChartData(cycleCountsCanvasId, `Motor ${alphabetArray[i]}`, latestRecord);
+            shiftLineChartData(cycleCountsCanvasId, `${alphabetArray[i]}`, latestRecord);
             document.getElementById(`latest-${alphabetArray[i]}-chart1`).innerHTML = latestRecord[0].Value;
         }
         for(var i = 0; i < 1; i++)  {
             const latestRecord = await fetchDataSingular(`CycleCount${i+1}`);
             CycleCountData.shift();
             CycleCountData.push(latestRecord);
-            shiftLineChartData(cycleCountsSpindleCanvasId, `Motor ${alphabetArray[3]}`, latestRecord);
+            shiftLineChartData(cycleCountsSpindleCanvasId, `${alphabetArray[3]}`, latestRecord);
             document.getElementById(`latest-${alphabetArray[3]}-chart2`).innerHTML = latestRecord[0].Value;
         }
     }

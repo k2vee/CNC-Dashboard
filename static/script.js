@@ -47,7 +47,6 @@ async function fetchDataTable(nodeId)   {
 function createDatasets(data, motors) {
     const datasets = [];
 
-    // Colors for each
     const colors = {
         X: '#FFC3A0', // Soft green-blue
         Y: '#A0FFC3', // Soft orange
@@ -63,7 +62,6 @@ function createDatasets(data, motors) {
             //console.log(`Checking NodeId ${row.NodeId} for Motor ${motor}: ${isMotor}`);
             return isMotor;
         });
-
         //console.log(`Filtered data for ${motor}:`, motorData);
 
         if (motorData.length > 0) {
@@ -76,9 +74,7 @@ function createDatasets(data, motors) {
             console.log(`No data found for ${motor}.`);
         }
     });
-
     //console.log('Final datasets:', datasets);
-
     return datasets;
 }
 
@@ -109,15 +105,15 @@ function createLineChart(canvasId, labels, datasets, chartTitle) {
                     position: 'bottom',
                     ticks: {
                         color: 'white', // Set x-axis label color
-                    },
+                    }
                 },
                 y: {
                     type: 'linear',
                     position: 'left',
                     ticks: {
                         color: 'white', // Set y-axis label color
-                    },
-                },
+                    }
+                }
             },
             animation: {
                 duration: 400, // Set the duration of the animation in milliseconds
@@ -130,15 +126,16 @@ function createLineChart(canvasId, labels, datasets, chartTitle) {
                     color: '#fff', // Set title text color
                     font: {
                         size: 22, // Set the font size for the title
-                    },
+                    }
                 },
                 legend: {
                     labels: {
                         color: '#fff', // Set legend text color
                     },
-                },
-            },
-        },
+                    onClick: (e) => e.stopPropagation()
+                }
+            }
+        }
     });
 }
 
@@ -148,19 +145,14 @@ function shiftLineChartData(canvasId, label, newData) {
     // Find the existing instance of the chart with the same canvas ID
     const chart = Chart.getChart(ctx);
 
-    if (label.includes('X'))    {
-        chart.data.datasets[0].data.push(newData[0].Value);
-        chart.data.datasets[0].data.shift();
-    }   else if (label.includes('Y'))   {
-        chart.data.datasets[1].data.push(newData[0].Value);
-        chart.data.datasets[1].data.shift();
-    }   else if (label.includes('Z'))   {
-        chart.data.datasets[2].data.push(newData[0].Value);
-        chart.data.datasets[2].data.shift();
-    }   else    {
-        chart.data.datasets[0].data.push(newData[0].Value);
-        chart.data.datasets[0].data.shift();
-    }    
+    // Iterate through the labels of datasets,
+    // if match occurs with 'label, push data into dataset
+    for(var i = 0; i < chart.data.datasets.length; i++) {
+        if(chart.data.datasets[i].label.includes(label))    {
+            chart.data.datasets[i].data.shift();
+            chart.data.datasets[i].data.push(newData[0].Value);
+        }
+    }
     chart.update();
 }
 

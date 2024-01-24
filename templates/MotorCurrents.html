@@ -49,7 +49,6 @@
     document.getElementById("buttonX").addEventListener("click", () => onFilterButtonClick('X'));
     document.getElementById("buttonY").addEventListener("click", () => onFilterButtonClick('Y'));
     document.getElementById("buttonZ").addEventListener("click", () => onFilterButtonClick('Z'));
-    document.getElementById("buttonSpindle").addEventListener("click", () => onFilterButtonClick('Spindle'));
     document.addEventListener('DOMContentLoaded', async () => {
         CurrentData = await fetchDataGroupLimited('Current', 50);
         CurrentData.reverse();
@@ -57,10 +56,9 @@
         MAXCURData = await fetchDataGroupLimited('MAXCUR', 50);
         MAXCURData.reverse();
         createMaxcurChart(MAXCURData);
-        timerId = setInterval(pollServer, 5000);
+        timerId = setInterval(pollServer, 1000);
     });
 
-    // Function to update the 'Current' line chart
     function createCurrentChart(data) {
         const currentLabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
         const currentDatasets = createDatasets(CurrentData, ['X', 'Y', 'Z']);
@@ -68,7 +66,6 @@
         createLineChart(currentCanvasId, currentLabels, currentDatasets, 'Current');
     }
 
-    // Function to create the 'MAXCUR' line chart
     function createMaxcurChart(data) {
         const maxCurlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
         const maxCurDatasets = createDatasets(MAXCURData, ['X', 'Y', 'Z']);
@@ -79,7 +76,6 @@
     function onFilterButtonClick(motor) {
         const button = document.getElementById(`button${motor}`);
         button.classList.toggle("selected-button");
-
         datasetFilter(currentCanvasId, motor);
         datasetFilter(maxCurCanvasId, motor);
     }
@@ -90,14 +86,14 @@
             const latestRecord = await fetchDataSingular(`Current${i+1}`);
             CurrentData.shift();
             CurrentData.push(latestRecord);
-            shiftLineChartData(currentCanvasId, `Motor ${alphabetArray[i]}`, latestRecord);
+            shiftLineChartData(currentCanvasId, `${alphabetArray[i]}`, latestRecord);
             document.getElementById(`latest-${alphabetArray[i]}-chart1`).innerHTML = latestRecord[0].Value;
         }
         for(var i = 0; i < 3; i++)  {
             const latestRecord = await fetchDataSingular(`MAXCUR2${i+1}`);
             MAXCURData.shift();
             MAXCURData.push(latestRecord);
-            shiftLineChartData(maxCurCanvasId, `Motor ${alphabetArray[i]}`, latestRecord);
+            shiftLineChartData(maxCurCanvasId, `${alphabetArray[i]}`, latestRecord);
             document.getElementById(`latest-${alphabetArray[i]}-chart2`).innerHTML = latestRecord[0].Value;
         }
     }
