@@ -77,16 +77,16 @@
     document.getElementById("buttonY").addEventListener("click", () => onFilterButtonClick('Y'));
     document.getElementById("buttonZ").addEventListener("click", () => onFilterButtonClick('Z'));
     document.addEventListener('DOMContentLoaded', async () => {
-        MACPOSData = await fetchDataGroupLimited('MACPOS', 50);
+        MACPOSData = await fetchDataGroupLimited('MACPOS', 51);
         MACPOSData.reverse();
         createMACPOSChart(MACPOSData);
-        MATPOSData = await fetchDataGroupLimited('MATPOS', 50);
+        MATPOSData = await fetchDataGroupLimited('MATPOS', 51);
         MATPOSData.reverse();
         createMATPOSChart(MATPOSData);
-        SCAPOSData = await fetchDataGroupLimited('SCAPOS', 50);
+        SCAPOSData = await fetchDataGroupLimited('SCAPOS', 51);
         SCAPOSData.reverse();
         createSCAPOSChart(SCAPOSData);
-        CURPOSData = await fetchDataGroupLimited('CurrentPosition', 50);
+        CURPOSData = await fetchDataGroupLimited('CurrentPosition', 51);
         CURPOSData.reverse();
         createCURPOSChart(CURPOSData);
         timerId = setInterval(pollServer, 1000);
@@ -94,7 +94,7 @@
 
     // Function to update the 'Current' line chart
     function createMACPOSChart(data) {
-        const MACPOSlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
+        const MACPOSlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
         const MACPOSdataset = createDatasets(MACPOSData, ['X', 'Y', 'Z']);
         // Create line chart with datasets for 'Current'
         createLineChart(MACPOSCanvasId, MACPOSlabels, MACPOSdataset, 'MACPOS');
@@ -102,21 +102,21 @@
 
     // Function to create the 'MAXCUR' line chart
     function createMATPOSChart(data) {
-        const MATPOSlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
+        const MATPOSlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
         const MATPOSDatasets = createDatasets(MATPOSData, ['X', 'Y', 'Z']);
         // Create line chart with datasets for 'MAXCUR'
         createLineChart(MATPOSCanvasId, MATPOSlabels, MATPOSDatasets, 'MATPOS');
     }
 
     function createSCAPOSChart(data) {
-        const SCAPOSlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
+        const SCAPOSlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
         const SCAPOSDatasets = createDatasets(SCAPOSData, ['X', 'Y', 'Z']);
         // Create line chart with datasets for 'MAXCUR'
         createLineChart(SCAPOSCanvasId, SCAPOSlabels, SCAPOSDatasets, 'SCAPOS');
     }
 
     function createCURPOSChart(data) {
-        const CURPOSlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
+        const CURPOSlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
         const CURPOSDatasets = createDatasets(CURPOSData, ['X', 'Y', 'Z']);
         // Create line chart with datasets for 'CURPOS'
         createLineChart(CURPOSCanvasId, CURPOSlabels, CURPOSDatasets, 'CurrentPosition');

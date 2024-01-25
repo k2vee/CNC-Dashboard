@@ -46,12 +46,14 @@ async function fetchDataTable(nodeId)   {
 // C: Creates ??datasets??
 function createDatasets(data, motors) {
     const datasets = [];
-
     const colors = {
         X: '#FFC3A0', // Soft green-blue
         Y: '#A0FFC3', // Soft orange
         Z: '#A0C3FF', // Soft lavender
         Spindle: '#e78ac3', // Soft pink
+        'Spindle 1': '#e78ac3',
+        'Spindle 2': '#c78ae3',
+        'Spindle 3': '#a78ae3'
     };
 
     // Splits motor data 
@@ -116,7 +118,7 @@ function createLineChart(canvasId, labels, datasets, chartTitle) {
                 }
             },
             animation: {
-                duration: 400, // Set the duration of the animation in milliseconds
+                duration: 200, // Set the duration of the animation in milliseconds
                 easing: 'easeInOutQuad', // Set the easing function for the animation
             },
             plugins: {
@@ -144,13 +146,14 @@ function shiftLineChartData(canvasId, label, newData) {
     const ctx = canvas.getContext('2d');
     // Find the existing instance of the chart with the same canvas ID
     const chart = Chart.getChart(ctx);
-
     // Iterate through the labels of datasets,
     // if match occurs with 'label, push data into dataset
     for(var i = 0; i < chart.data.datasets.length; i++) {
         if(chart.data.datasets[i].label.includes(label))    {
-            chart.data.datasets[i].data.shift();
+            if(chart.data.datasets[i].data.length >= 51)
+                chart.data.datasets[i].data.shift();
             chart.data.datasets[i].data.push(newData[0].Value);
+            break;
         }
     }
     chart.update();
@@ -186,7 +189,10 @@ function isMotorNodeId(nodeId, motor) {
         X: ['Current1', 'CYCCNT1', 'MAXCUR21', 'MACPOS1', 'MATPOS1', 'SCAPOS1', 'RemainCommand1', 'CurrentPosition1', 'ServoMonitor_Gain1', 'ServoMonitor_Droop1', 'Speed1'],
         Y: ['Current2', 'CYCCNT2', 'MAXCUR22', 'MACPOS2', 'MATPOS2', 'SCAPOS2', 'RemainCommand2', 'CurrentPosition2', 'Gain2', 'Droop2', 'Speed1'],
         Z: ['Current3', 'CYCCNT3', 'MAXCUR23', 'MACPOS3', 'MATPOS3', 'SCAPOS3', 'RemainCommand3', 'CurrentPosition3', 'Gain3', 'Droop3', 'Speed1'],
-        Spindle: ['SpindleMonitor_Gain1', 'SpindleMonitor_Droop1', 'LEDDisplay1', 'ControlInput11', 'ControlOutput11', 'ControlOutput41', 'CycleCount1', 'ControlOutput21', 'Load1'] // Include the node key for the 'Spindle' motor
+        Spindle: ['SpindleMonitor_Gain1', 'SpindleMonitor_Droop1', 'LEDDisplay1', 'ControlInput11', 'CycleCount1', 'Load1'], // Include the node key for the 'Spindle' motor
+        'Spindle 1': ['ControlOutput11'],
+        'Spindle 2': ['ControlOutput21'],
+        'Spindle 3': ['ControlOutput41'] 
     };
 
     // Check if motor is defined before accessing its properties

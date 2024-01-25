@@ -37,7 +37,7 @@
     document.getElementById("buttonY").addEventListener("click", () => onFilterButtonClick('Y'));
     document.getElementById("buttonZ").addEventListener("click", () => onFilterButtonClick('Z'));
     document.addEventListener('DOMContentLoaded', async () => {
-        RemComData = await fetchDataGroupLimited('RemainCommand', 50);
+        RemComData = await fetchDataGroupLimited('RemainCommand', 51);
         RemComData.reverse();
         createRemComChart(RemComData);
         timerId = setInterval(pollServer, 1000);
@@ -45,7 +45,7 @@
 
     // Function to update the 'Remain Command' line chart
     function createRemComChart(data) {
-        const RemComLabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
+        const RemComLabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
         const RemComDatasets = createDatasets(RemComData, ['X', 'Y', 'Z']);
         // Create line chart with datasets for 'Current'
         createLineChart(RemComCanvasId, RemComLabels, RemComDatasets, 'Remain Command');

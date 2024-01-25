@@ -49,10 +49,10 @@
     document.getElementById("buttonZ").addEventListener("click", () => onFilterButtonClick('Z'));
     document.getElementById("buttonSpindle").addEventListener("click", () => onFilterButtonClick('Spindle'));
     document.addEventListener('DOMContentLoaded', async () => {
-        CYCCNTData = await fetchDataGroupLimited('CYCCNT', 50);
+        CYCCNTData = await fetchDataGroupLimited('CYCCNT', 51);
         CYCCNTData.reverse();
         createCYCCNTCharts(CYCCNTData);
-        CycleCountData = await fetchDataGroupLimited('CycleCount', 50);
+        CycleCountData = await fetchDataGroupLimited('CycleCount', 51);
         CycleCountData.reverse();
         createCycleCountCharts(CycleCountData);
         timerId = setInterval(pollServer, 1000);
@@ -60,7 +60,7 @@
 
     // Function to update the 'CYCCNT' line chart
     function createCYCCNTCharts(data) {
-        const cyccntLabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
+        const cyccntLabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
         const cyccntDatasets = createDatasets(CYCCNTData, ['X', 'Y', 'Z']);
         // Create line chart with datasets for 'CYCCNT'
         createLineChart(cycleCountsCanvasId, cyccntLabels, cyccntDatasets, 'CYCCNT');
@@ -68,7 +68,7 @@
 
     // Function to update the 'SpindleCount' line chart
     function createCycleCountCharts(data) {
-        const cycleCountlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
+        const cycleCountlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
         const cycleCountDatasets = createDatasets(CycleCountData, ['Spindle']);
         // Create line chart with datasets for 'CycleCount'
         createLineChart(cycleCountsSpindleCanvasId, cycleCountlabels, cycleCountDatasets, 'CycleCount');

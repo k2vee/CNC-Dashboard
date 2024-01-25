@@ -50,24 +50,25 @@
     document.getElementById("buttonY").addEventListener("click", () => onFilterButtonClick('Y'));
     document.getElementById("buttonZ").addEventListener("click", () => onFilterButtonClick('Z'));
     document.addEventListener('DOMContentLoaded', async () => {
-        CurrentData = await fetchDataGroupLimited('Current', 50);
+        CurrentData = await fetchDataGroupLimited('Current', 51);
         CurrentData.reverse();
         createCurrentChart(CurrentData);
-        MAXCURData = await fetchDataGroupLimited('MAXCUR', 50);
+        MAXCURData = await fetchDataGroupLimited('MAXCUR', 51);
         MAXCURData.reverse();
         createMaxcurChart(MAXCURData);
         timerId = setInterval(pollServer, 1000);
     });
 
     function createCurrentChart(data) {
-        const currentLabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
+        const currentLabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
+        console.log(currentLabels);
         const currentDatasets = createDatasets(CurrentData, ['X', 'Y', 'Z']);
         // Create line chart with datasets for 'Current'
         createLineChart(currentCanvasId, currentLabels, currentDatasets, 'Current');
     }
 
     function createMaxcurChart(data) {
-        const maxCurlabels = Array.from({ length: data.length }, (_, i) => i + 1); // Sequential x-axis values
+        const maxCurlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
         const maxCurDatasets = createDatasets(MAXCURData, ['X', 'Y', 'Z']);
         // Create line chart with datasets for 'MAXCUR'
         createLineChart(maxCurCanvasId, maxCurlabels, maxCurDatasets, 'MAXCUR');
