@@ -1,31 +1,39 @@
 {% extends 'base.html' %}
 {% block content %}
-<div id="motorSelectionButtons">
-    <button id="buttonSpindle" class="motor-button selected-button">
-        Spindle</button>
-</div>
-<div id="latestValues">
-    <div class="chart-latestValues">
-        <p class="valueTitle">Spindle Control Input</p>
-        <p class="motorId">Spindle 1</p>
-        <p id="latest-Spindle-chart1">0</p>
-    </div>
-    <div class="chart-latestValues">
-        <p class="valueTitle">Spindle Control Output</p>
-        <p class="motorId">Spindle 1</p>
-        <p id="latest-Spindle 1-chart2">0</p>
-        <p class="motorId">Spindle 2</p>
-        <p id="latest-Spindle 2-chart2">0</p>
-        <p class="motorId">Spindle 3</p>
-        <p id="latest-Spindle 4-chart2">0</p>
-    </div>
-</div>
-<div id="controlInputOutputGraphs" class="graph-container">
-    <div class="chart-wrapper">
+<div class="flexbox overall-flexbox">
+    <div class="chart-container">
+        <div class="flexbox">
+            <div class="motorId">Motor X<br>
+                <div class="latestValue" id="latest-Spindle-chart1">0</div>
+            </div>
+        </div>
         <canvas id="controlInputChart"></canvas>
+        <div class="flexbox">
+            <button id="buttonSpindle1" class="motor-button selected-button">
+                Spindle</button>
+        </div>
     </div>
-    <div class="chart-wrapper">
+    <div class="chart-container">
+        <div class="flexbox">
+            <div class="motorId">Spindle 1<br>
+                <div class="latestValue" id="latest-Spindle1-chart2">0</div>
+            </div>
+            <div class="motorId">Spindle 2<br>
+                <div class="latestValue" id="latest-Spindle2-chart2">0</div>
+            </div>
+            <div class="motorId">Spindle 3<br>
+                <div class="latestValue" id="latest-Spindle4-chart2">0</div>
+            </div>
+        </div>
         <canvas id="controlOutputChart"></canvas>
+        <div class="flexbox">
+            <button id="buttonSpindle 12" class="motor-button selected-button">
+                Spindle 1</button>
+            <button id="buttonSpindle 22" class="motor-button selected-button">
+                Spindle 2</button>
+            <button id="buttonSpindle 32" class="motor-button selected-button">
+                Spindle 3</button>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -38,7 +46,10 @@
     const controlOutputCanvasID = 'controlOutputChart';
 
     // Event listeners
-    document.getElementById("buttonSpindle").addEventListener("click", () => onFilterButtonClick('Spindle'));
+    document.getElementById("buttonSpindle1").addEventListener("click", () => onFilterButtonClick('Spindle', 1));
+    document.getElementById("buttonSpindle 12").addEventListener("click", () => onFilterButtonClick('Spindle 1', 2));
+    document.getElementById("buttonSpindle 22").addEventListener("click", () => onFilterButtonClick('Spindle 2', 2));
+    document.getElementById("buttonSpindle 32").addEventListener("click", () => onFilterButtonClick('Spindle 3', 2));
     document.addEventListener('DOMContentLoaded', async () => {
         controlInputData = await fetchDataGroupLimited('ControlInput', 51);
         controlInputData.reverse();
@@ -63,11 +74,19 @@
         createLineChart(controlOutputCanvasID, controlOutputlabels, controlOutputDatasets, 'ControlOutput');
     }
 
-    function onFilterButtonClick(motor) {
-        const button = document.getElementById(`button${motor}`);
+    function onFilterButtonClick(motor, chartNo) {
+        const button = document.getElementById(`button${motor}${chartNo}`);
         button.classList.toggle("selected-button");
-        datasetFilter(controlInputCanvasId, motor);
-        datasetFilter(controlOutputCanvasID, motor);
+        switch(chartNo) {
+            case 1:
+                datasetFilter(controlInputCanvasId, motor); 
+                break;
+            case 2:
+                datasetFilter(controlOutputCanvasID, motor);
+                break;
+            default:
+                break;
+        }
     }
 
     async function pollServer() {
@@ -87,7 +106,7 @@
             controlOutputData.shift();
             controlOutputData.push(latestRecord);
             shiftLineChartData(controlOutputCanvasID, `${alphabetArray[i]}`, latestRecord);
-            document.getElementById(`latest-Spindle ${i+1}-chart2`).innerHTML = latestRecord[0].Value;
+            document.getElementById(`latest-Spindle${i+1}-chart2`).innerHTML = latestRecord[0].Value;
         }
     }
 </script>

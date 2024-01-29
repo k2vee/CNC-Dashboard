@@ -1,3 +1,7 @@
+*   {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
 nav {
     background-color: #515151;
     overflow: hidden;
@@ -38,8 +42,8 @@ body {
 }
 
 #contentSection {
-    padding: 5vw;
-    padding-top: 8vh;
+    padding: 3vw;
+    padding-top: 6vh;
 }
 
 table {
@@ -47,8 +51,7 @@ table {
     width: 100%;
 }
 
-th,
-td {
+th, td {
     border: 1px solid #ddd;
     padding: 8px;
     text-align: left;
@@ -95,22 +98,58 @@ button:hover {
     background-color: #23d66e;
 }
 
-#latestValues {
-    display: inline grid;
-    grid-template-columns: 50% 50%;
-    background-color: #444;
-    padding: 1vw 1vh;
+.flexbox    {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: flex-start;
+    justify-content: space-around;
+    align-content: space-around;
 }
 
-.chart-latestValues {
-    display: inline block;
+.overall-flexbox    {
+    justify-content: space-evenly;
+}
+
+.chart-container {
+    background-color: #444;
+    border-radius: 2%;
+    flex: 1 0 auto;
+    padding: 1%;
+    margin: 1%;
+    min-width: 14cm;
+    min-height: 20vh;
+    max-width: 40vw;
+}
+
+.motorId    {
+    min-width: 14%;
+    max-width: 40%;
+    border-radius: 10%;
+    margin: 0 2% 1% 2%;
+    background-color: #555;
+    text-align: center;
+    flex: 1 1 auto;
+}
+
+.latestValue   {
+    padding: 1.5mm;
+    font-weight: normal;    
+}
+
+canvas {
+    min-height: 6cm;
+    border-radius: 2%;
+    background-color: #555;
 }
 
 .graph-container {
     display: flex;
     justify-content: space-between;
     width: 80vw;
-    /* Adjust the width as needed */
+}
+
+.chart-latestValues {
+    display: inline block;
 }
 
 .chart-wrapper {
@@ -120,13 +159,6 @@ button:hover {
     padding: 3px;
 }
 
-canvas {
-    min-width: 40vw;
-    min-height: 50vh;
-    width: 40vw;
-    height: 50vh;
-    display: inline;
-}
 
 #groupFilterContainer {
     margin: 20px;

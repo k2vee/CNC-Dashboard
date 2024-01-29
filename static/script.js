@@ -119,7 +119,7 @@ function createLineChart(canvasId, labels, datasets, chartTitle) {
             },
             animation: {
                 duration: 200, // Set the duration of the animation in milliseconds
-                easing: 'easeInOutQuad', // Set the easing function for the animation
+                easing: 'linear', // Set the easing function for the animation
             },
             plugins: {
                 title: {
@@ -150,9 +150,9 @@ function shiftLineChartData(canvasId, label, newData) {
     // if match occurs with 'label, push data into dataset
     for(var i = 0; i < chart.data.datasets.length; i++) {
         if(chart.data.datasets[i].label.includes(label))    {
-            if(chart.data.datasets[i].data.length >= 51)
-                chart.data.datasets[i].data.shift();
             chart.data.datasets[i].data.push(newData[0].Value);
+            if(chart.data.datasets[i].data.length >= 52)
+                chart.data.datasets[i].data.shift();
             break;
         }
     }

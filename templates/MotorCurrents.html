@@ -1,39 +1,49 @@
 {% extends 'base.html' %}
 {% block content %}
-<div id="motorSelectionButtons">
-    <button id="buttonX" class="motor-button selected-button">
-        Motor X</button>
-    <button id="buttonY" class="motor-button selected-button">
-        Motor Y</button>
-    <button id="buttonZ" class="motor-button selected-button">
-        Motor Z</button>
-</div>
-<div id="latestValues">
-    <div class="chart-latestValues">
-        <p class="valueTitle">Current</p>
-        <p class="motorId">Motor X</p>
-        <p id="latest-X-chart1">0</p>
-        <p class="motorId">Motor Y</p>
-        <p id="latest-Y-chart1">0</p>
-        <p class="motorId">Motor Z</p>
-        <p id="latest-Z-chart1">0</p>
-    </div>
-    <div class="chart-latestValues">
-        <p class="valueTitle">Maximum Currents</p>
-        <p class="motorId">Motor X</p>
-        <p id="latest-X-chart2">0</p>
-        <p class="motorId">Motor Y</p>
-        <p id="latest-Y-chart2">0</p>
-        <p class="motorId">Motor Z</p>
-        <p id="latest-Z-chart2">0</p>
-    </div>
-</div>
-<div id="currentGraphs" class="graph-container">
-    <div class="chart-wrapper">
+<div class="flexbox overall-flexbox">
+    <div class="chart-container">
+        <div class="flexbox">
+            <div class="motorId">Motor X<br>
+                <div class="latestValue" id="latest-X-chart1">0</div>
+            </div>
+            <div class="motorId">Motor Y<br>
+                <div class="latestValue" id="latest-Y-chart1">0</div>
+            </div>
+            <div class="motorId">Motor Z<br>
+                <div class="latestValue" id="latest-Z-chart1">0</div>
+            </div>
+        </div>
         <canvas id="currentChart"></canvas>
+        <div class="flexbox">
+            <button id="buttonX1" class="motor-button selected-button">
+                Motor X</button>
+            <button id="buttonY1" class="motor-button selected-button">
+                Motor Y</button>
+            <button id="buttonZ1" class="motor-button selected-button">
+                Motor Z</button>
+        </div>
     </div>
-    <div class="chart-wrapper">
+    <div class="chart-container">
+        <div class="flexbox">
+            <div class="motorId">Motor X
+                <div class="latestValue" id="latest-X-chart2">0</div>
+            </div>
+            <div class="motorId">Motor Y
+                <div class="latestValue" id="latest-Y-chart2">0</div>
+            </div>
+            <div class="motorId">Motor Z
+                <div class="latestValue" id="latest-Z-chart2">0</div>
+            </div>
+        </div>
         <canvas id="maxCurChart"></canvas>
+        <div class="flexbox">
+            <button id="buttonX2" class="motor-button selected-button">
+                Motor X</button>
+            <button id="buttonY2" class="motor-button selected-button">
+                Motor Y</button>
+            <button id="buttonZ2" class="motor-button selected-button">
+                Motor Z</button>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -46,9 +56,12 @@
     const maxCurCanvasId = 'maxCurChart';
 
     // Event listeners
-    document.getElementById("buttonX").addEventListener("click", () => onFilterButtonClick('X'));
-    document.getElementById("buttonY").addEventListener("click", () => onFilterButtonClick('Y'));
-    document.getElementById("buttonZ").addEventListener("click", () => onFilterButtonClick('Z'));
+    document.getElementById("buttonX1").addEventListener("click", () => onFilterButtonClick('X', 1));
+    document.getElementById("buttonY1").addEventListener("click", () => onFilterButtonClick('Y', 1));
+    document.getElementById("buttonZ1").addEventListener("click", () => onFilterButtonClick('Z', 1));
+    document.getElementById("buttonX2").addEventListener("click", () => onFilterButtonClick('X', 2));
+    document.getElementById("buttonY2").addEventListener("click", () => onFilterButtonClick('Y', 2));
+    document.getElementById("buttonZ2").addEventListener("click", () => onFilterButtonClick('Z', 2));
     document.addEventListener('DOMContentLoaded', async () => {
         CurrentData = await fetchDataGroupLimited('Current', 51);
         CurrentData.reverse();
@@ -61,7 +74,6 @@
 
     function createCurrentChart(data) {
         const currentLabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        console.log(currentLabels);
         const currentDatasets = createDatasets(CurrentData, ['X', 'Y', 'Z']);
         // Create line chart with datasets for 'Current'
         createLineChart(currentCanvasId, currentLabels, currentDatasets, 'Current');
@@ -74,11 +86,19 @@
         createLineChart(maxCurCanvasId, maxCurlabels, maxCurDatasets, 'MAXCUR');
     }
 
-    function onFilterButtonClick(motor) {
-        const button = document.getElementById(`button${motor}`);
+    function onFilterButtonClick(motor, chartNo) {
+        const button = document.getElementById(`button${motor}${chartNo}`);
         button.classList.toggle("selected-button");
-        datasetFilter(currentCanvasId, motor);
-        datasetFilter(maxCurCanvasId, motor);
+        switch(chartNo) {
+            case 1: 
+                datasetFilter(currentCanvasId, motor);
+                break;
+            case 2:
+                datasetFilter(maxCurCanvasId, motor);
+                break;
+            default:
+                break;
+        }
     }
 
     async function pollServer() {
