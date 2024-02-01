@@ -53,25 +53,25 @@
     document.addEventListener('DOMContentLoaded', async () => {
         controlInputData = await fetchDataGroupLimited('ControlInput', 51);
         controlInputData.reverse();
-        createControlInputCharts(controlInputData);
+        createControlInputCharts();
         controlOutputData = await fetchDataGroupLimited('ControlOutput', 51);
         controlOutputData.reverse();
-        createControlOutputCharts(controlOutputData);
+        createControlOutputCharts();
         timerId = setInterval(pollServer, 1000);
     });
 
-    function createControlInputCharts(data) {
-        const controlInputLabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        const controlInputDatasets = createDatasets(controlInputData, ['Spindle']);
+    function createControlInputCharts() {
+        const controlInputLabels = createLabels(controlInputData, 'Spindle'); // Second parameter can be any of the dataset names (it is supposed to be kinda inaccurate)
+        const controlInputDataset = createDataset(controlInputData, ['Spindle']);
         // Create line chart with datasets for 'ControlInput'
-        createLineChart(controlInputCanvasId, controlInputLabels, controlInputDatasets, 'ControlInput');
+        createLineChart(controlInputCanvasId, controlInputLabels, controlInputDataset, 'ControlInput');
     }
 
-    function createControlOutputCharts(data) {
-        const controlOutputlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        const controlOutputDatasets = createDatasets(controlOutputData, ['Spindle 1', 'Spindle 2', 'Spindle 3']);
+    function createControlOutputCharts() {
+        const controlOutputLabels = createLabels(controlOutputData, 'Spindle 1'); // Second parameter can be any of the dataset names (it is supposed to be kinda inaccurate)
+        const controlOutputDataset = createDataset(controlOutputData, ['Spindle 1', 'Spindle 2', 'Spindle 3']);
         // Create line chart with datasets for 'ControlOutput'
-        createLineChart(controlOutputCanvasID, controlOutputlabels, controlOutputDatasets, 'ControlOutput');
+        createLineChart(controlOutputCanvasID, controlOutputLabels, controlOutputDataset, 'ControlOutput');
     }
 
     function onFilterButtonClick(motor, chartNo) {
@@ -91,6 +91,11 @@
 
     async function pollServer() {
         const alphabetArray = ['Spindle 1', 'Spindle 2', '', 'Spindle 3'];
+        const systemTime = new Date().getTime();
+        // Shift x-axis labels for gainChart
+        let chart = Chart.getChart(document.getElementById(controlInputCanvasId).getContext('2d'));
+        chart.data.labels.push(systemTime);
+        chart.data.labels.shift();
         for(var i = 0; i < 1; i++)  {
             const latestRecord = await fetchDataSingular(`ControlInput${i+1}1`);
             if(controlInputData.length >= 50)
@@ -99,6 +104,9 @@
             shiftLineChartData(controlInputCanvasId, 'Spindle', latestRecord);
             document.getElementById(`latest-Spindle-chart1`).innerHTML = latestRecord[0].Value;
         }
+        chart = Chart.getChart(document.getElementById(controlOutputCanvasID).getContext('2d'));
+        chart.data.labels.push(systemTime);
+        chart.data.labels.shift();
         for(var i = 0; i < 4; i++)  {
             if(i == 2)
                 continue;

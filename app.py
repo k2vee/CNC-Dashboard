@@ -1,7 +1,7 @@
 import sqlite3
 from flask import Flask, render_template, jsonify, request, g, Response
-from markupsafe import escape
-from time import gmtime, strftime
+from winfiletime import to_datetime
+from math import floor
 
 app = Flask(__name__)
 
@@ -168,7 +168,7 @@ def formatData(rows, nodeKeyMapping):
     data = []
     for row in rows:
         try:
-            value = float.fromhex(row[1].strip())
+            value = round(float.fromhex(row[1].strip()), 2)
         except:
             value = 0
         finally:
@@ -183,8 +183,8 @@ def formatData(rows, nodeKeyMapping):
                     'Datatype': row[2],
                     'Size': row[3],
                     'Quality': row[4],
-                    'SourceTimeStamp': row[5],
-                    'ServerTimeStamp': row[6]
+                    'SourceTimeStamp': to_datetime(row[5]),
+                    'ServerTimeStamp': floor((row[6]-116444736000000000)/10000)
                 })
     return data
 

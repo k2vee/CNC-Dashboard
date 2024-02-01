@@ -94,12 +94,12 @@
 {% block script %}
 <script>
     // Global vars/accessible data objects
-    var GainData, DroopData, SpeedData, LoadData;
+    var gainData, droopData, speedData, loadData;
     var timerId;
-    const GainCanvasId = 'GainChart';
-    const DroopCanvasId = 'DroopChart';
-    const SpeedCanvasId = 'SpeedChart';
-    const LoadCanvasId = 'LoadChart';
+    const gainCanvasId = 'GainChart';
+    const droopCanvasId = 'DroopChart';
+    const speedCanvasId = 'SpeedChart';
+    const loadCanvasId = 'LoadChart';
 
     // Event listeners
     // Future reference: There is a more efficient way of doing this but I have time constraints
@@ -117,47 +117,47 @@
     document.getElementById("buttonZ3").addEventListener("click", () => onFilterButtonClick('Z', 3));
     document.getElementById("buttonSpindle4").addEventListener("click", () => onFilterButtonClick('Spindle', 4));
     document.addEventListener('DOMContentLoaded', async () => {
-        GainData = await fetchDataGroupLimited('Gain', 51);
-        GainData.reverse();
-        createGainChart(GainData);
-        DroopData = await fetchDataGroupLimited('Droop', 51);
-        DroopData.reverse();
-        createDroopChart(DroopData);
-        SpeedData = await fetchDataGroupLimited('Speed', 51);
-        SpeedData.reverse();
-        createSpeedChart(SpeedData);
-        LoadData = await fetchDataGroupLimited('Load', 51);
-        LoadData.reverse();
-        createLoadChart(LoadData);
+        gainData = await fetchDataGroupLimited('Gain', 51);
+        gainData.reverse();
+        createGainChart();
+        droopData = await fetchDataGroupLimited('Droop', 51);
+        droopData.reverse();
+        createDroopChart();
+        speedData = await fetchDataGroupLimited('Speed', 51);
+        speedData.reverse();
+        createSpeedChart();
+        loadData = await fetchDataGroupLimited('Load', 51);
+        loadData.reverse();
+        createLoadChart();
         timerId = setInterval(pollServer, 1000);
     });
 
-    function createGainChart(data) {
-        const Gainlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        const GainDataset = createDatasets(GainData, ['X', 'Y', 'Z', 'Spindle']);
+    function createGainChart() {
+        const gainLabels = createLabels(gainData, 'X'); // Second parameter can be any of the dataset names (it is supposed to be kinda inaccurate)
+        const gainDataset = createDataset(gainData, ['X', 'Y', 'Z', 'Spindle']);
         // Create line chart with datasets for 'Gain'
-        createLineChart(GainCanvasId, Gainlabels, GainDataset, 'Gain');
+        createLineChart(gainCanvasId, gainLabels, gainDataset, 'Gain');
     }
 
-    function createDroopChart(data) {
-        const Drooplabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        const DroopDatasets = createDatasets(DroopData, ['X', 'Y', 'Z', 'Spindle']);
+    function createDroopChart() {
+        const droopLabels = createLabels(droopData, 'X'); // Second parameter can be any of the dataset names (it is supposed to be kinda inaccurate)
+        const droopDataset = createDataset(droopData, ['X', 'Y', 'Z', 'Spindle']);
         // Create line chart with datasets for 'MAXCUR'
-        createLineChart(DroopCanvasId, Drooplabels, DroopDatasets, 'Droop');
+        createLineChart(droopCanvasId, droopLabels, droopDataset, 'Droop');
     }
 
-    function createSpeedChart(data) {
-        const Speedlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        const SpeedDatasets = createDatasets(SpeedData, ['X', 'Y', 'Z', 'Spindle']);
+    function createSpeedChart() {
+        const speedLabels = createLabels(speedData, 'X'); // Second parameter can be any of the dataset names (it is supposed to be kinda inaccurate)
+        const speedDataset = createDataset(speedData, ['X', 'Y', 'Z', 'Spindle']);
         // Create line chart with datasets for 'Speed'
-        createLineChart(SpeedCanvasId, Speedlabels, SpeedDatasets, 'Speed');
+        createLineChart(speedCanvasId, speedLabels, speedDataset, 'Speed');
     }
 
-    function createLoadChart(data) {
-        const Loadlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        const LoadDatasets = createDatasets(LoadData, ['X', 'Y', 'Z', 'Spindle']);
+    function createLoadChart() {
+        const loadLabels = createLabels(loadData, 'Spindle'); // Second parameter can be any of the dataset names (it is supposed to be kinda inaccurate)
+        const loadDataset = createDataset(loadData, ['Spindle']);
         // Create line chart with datasets for 'Load'
-        createLineChart(LoadCanvasId, Loadlabels, LoadDatasets, 'Load');
+        createLineChart(loadCanvasId, loadLabels, loadDataset, 'Load');
     }
 
     function onFilterButtonClick(motor, chartNo) {
@@ -165,58 +165,75 @@
         button.classList.toggle("selected-button");
         switch(chartNo) {
             case 1:
-                datasetFilter(GainCanvasId, motor);
+                datasetFilter(gainCanvasId, motor);
                 break;
             case 2:
-                datasetFilter(DroopCanvasId, motor);
+                datasetFilter(droopCanvasId, motor);
                 break;
             case 3:
-                datasetFilter(SpeedCanvasId, motor);
+                datasetFilter(speedCanvasId, motor);
                 break;
             case 4:
-                datasetFilter(LoadCanvasId, motor);
+                datasetFilter(loadCanvasId, motor);
                 break;
         }
     }
 
     async function pollServer() {
         const alphabetArray = ['X', 'Y', 'Z', 'Spindle'];
+        const systemTime = new Date().getTime();
+        // Shift x-axis labels for gainChart
+        let chart = Chart.getChart(document.getElementById(gainCanvasId).getContext('2d'));
+        chart.data.labels.push(systemTime);
+        chart.data.labels.shift();
         for(var i = 0; i < 3; i++)  {
             const latestRecord = await fetchDataSingular(`ServoMonitor_Gain${i+1}`);
-            GainData.shift();
-            GainData.push(latestRecord);
-            shiftLineChartData(GainCanvasId, `${alphabetArray[i]}`, latestRecord);
+            gainData.shift();
+            gainData.push(latestRecord);
+            shiftLineChartData(gainCanvasId, `${alphabetArray[i]}`, latestRecord);
             document.getElementById(`latest-${alphabetArray[i]}-chart1`).innerHTML = latestRecord[0].Value;
         }  
         var latestRecord = await fetchDataSingular('SpindleMonitor_Gain1');
-        GainData.shift();
-        GainData.push(latestRecord);
-        shiftLineChartData(GainCanvasId, `${alphabetArray[3]}`, latestRecord);
+        gainData.shift();
+        gainData.push(latestRecord);
+        shiftLineChartData(gainCanvasId, `${alphabetArray[3]}`, latestRecord);
         document.getElementById(`latest-${alphabetArray[3]}-chart1`).innerHTML = latestRecord[0].Value;
+        // Shift x-axis labels for droopChart
+        chart = Chart.getChart(document.getElementById(droopCanvasId).getContext('2d'));
+        chart.data.labels.push(systemTime);
+        chart.data.labels.shift();
         for(var i = 0; i < 3; i++)  {
             const latestRecord = await fetchDataSingular(`ServoMonitor_Droop${i+1}`);
-            DroopData.shift();
-            DroopData.push(latestRecord);
-            shiftLineChartData(DroopCanvasId, `${alphabetArray[i]}`, latestRecord);
+            droopData.shift();
+            droopData.push(latestRecord);
+            shiftLineChartData(droopCanvasId, `${alphabetArray[i]}`, latestRecord);
             document.getElementById(`latest-${alphabetArray[i]}-chart2`).innerHTML = latestRecord[0].Value;
         }
         latestRecord = await fetchDataSingular('SpindleMonitor_Droop1');
-        GainData.shift();
-        GainData.push(latestRecord);
-        shiftLineChartData(DroopCanvasId, `${alphabetArray[3]}`, latestRecord);
+        gainData.shift();
+        gainData.push(latestRecord);
+        shiftLineChartData(droopCanvasId, `${alphabetArray[3]}`, latestRecord);
         document.getElementById(`latest-${alphabetArray[3]}-chart2`).innerHTML = latestRecord[0].Value;
+        // Shift x-axis labels for speedChart
+        chart = Chart.getChart(document.getElementById(speedCanvasId).getContext('2d'));
+        chart.data.labels.push(systemTime);
+        chart.data.labels.shift();
         for(var i = 0; i < 3; i++)  {
             const latestRecord = await fetchDataSingular(`Speed${i+1}`);
-            SpeedData.shift();
-            SpeedData.push(latestRecord);
-            shiftLineChartData(SpeedCanvasId, `${alphabetArray[i]}`, latestRecord);
+            speedData.shift();
+            speedData.push(latestRecord);
+            shiftLineChartData(speedCanvasId, `${alphabetArray[i]}`, latestRecord);
             document.getElementById(`latest-${alphabetArray[i]}-chart3`).innerHTML = latestRecord[0].Value;
         }
+        // Shift x-axis labels for loadChart
+        chart = Chart.getChart(document.getElementById(loadCanvasId).getContext('2d'));
+        chart.data.labels.push(systemTime);
+        chart.data.labels.shift();
         for(var i = 0; i < 1; i++)  {
             const latestRecord = await fetchDataSingular(`Load${i+1}`);
-            LoadData.shift();
-            LoadData.push(latestRecord);
-            shiftLineChartData(LoadCanvasId, `${alphabetArray[3]}`, latestRecord);
+            loadData.shift();
+            loadData.push(latestRecord);
+            shiftLineChartData(loadCanvasId, `${alphabetArray[3]}`, latestRecord);
             document.getElementById(`latest-${alphabetArray[3]}-chart4`).innerHTML = latestRecord[0].Value;
         }
     }

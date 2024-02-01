@@ -117,47 +117,47 @@
     document.addEventListener('DOMContentLoaded', async () => {
         MACPOSData = await fetchDataGroupLimited('MACPOS', 51);
         MACPOSData.reverse();
-        createMACPOSChart(MACPOSData);
+        createMACPOSChart();
         MATPOSData = await fetchDataGroupLimited('MATPOS', 51);
         MATPOSData.reverse();
-        createMATPOSChart(MATPOSData);
+        createMATPOSChart();
         SCAPOSData = await fetchDataGroupLimited('SCAPOS', 51);
         SCAPOSData.reverse();
-        createSCAPOSChart(SCAPOSData);
+        createSCAPOSChart();
         CURPOSData = await fetchDataGroupLimited('CurrentPosition', 51);
         CURPOSData.reverse();
-        createCURPOSChart(CURPOSData);
+        createCURPOSChart();
         timerId = setInterval(pollServer, 1000);
     });
 
     // Function to update the 'Current' line chart
-    function createMACPOSChart(data) {
-        const MACPOSlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        const MACPOSdataset = createDatasets(MACPOSData, ['X', 'Y', 'Z']);
-        // Create line chart with datasets for 'Current'
-        createLineChart(MACPOSCanvasId, MACPOSlabels, MACPOSdataset, 'MACPOS');
+    function createMACPOSChart() {
+        const MACPOSLabels = createLabels(MACPOSData, 'X'); // Second parameter can be any of the dataset names (it is supposed to be kinda inaccurate)
+        const MACPOSDataset = createDataset(MACPOSData, ['X', 'Y', 'Z']);
+        // Create line chart with dataset for 'Current'
+        createLineChart(MACPOSCanvasId, MACPOSLabels, MACPOSDataset, 'MACPOS');
     }
 
     // Function to create the 'MAXCUR' line chart
-    function createMATPOSChart(data) {
-        const MATPOSlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        const MATPOSDatasets = createDatasets(MATPOSData, ['X', 'Y', 'Z']);
-        // Create line chart with datasets for 'MAXCUR'
-        createLineChart(MATPOSCanvasId, MATPOSlabels, MATPOSDatasets, 'MATPOS');
+    function createMATPOSChart() {
+        const MATPOSLabels = createLabels(MATPOSData, 'X'); // Second parameter can be any of the dataset names (it is supposed to be kinda inaccurate)
+        const MATPOSDataset = createDataset(MATPOSData, ['X', 'Y', 'Z']);
+        // Create line chart with dataset for 'MAXCUR'
+        createLineChart(MATPOSCanvasId, MATPOSLabels, MATPOSDataset, 'MATPOS');
     }
 
-    function createSCAPOSChart(data) {
-        const SCAPOSlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        const SCAPOSDatasets = createDatasets(SCAPOSData, ['X', 'Y', 'Z']);
-        // Create line chart with datasets for 'MAXCUR'
-        createLineChart(SCAPOSCanvasId, SCAPOSlabels, SCAPOSDatasets, 'SCAPOS');
+    function createSCAPOSChart() {
+        const SCAPOSLabels = createLabels(SCAPOSData, 'X'); // Second parameter can be any of the dataset names (it is supposed to be kinda inaccurate)
+        const SCAPOSDataset = createDataset(SCAPOSData, ['X', 'Y', 'Z']);
+        // Create line chart with dataset for 'MAXCUR'
+        createLineChart(SCAPOSCanvasId, SCAPOSLabels, SCAPOSDataset, 'SCAPOS');
     }
 
-    function createCURPOSChart(data) {
-        const CURPOSlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        const CURPOSDatasets = createDatasets(CURPOSData, ['X', 'Y', 'Z']);
-        // Create line chart with datasets for 'CURPOS'
-        createLineChart(CURPOSCanvasId, CURPOSlabels, CURPOSDatasets, 'CurrentPosition');
+    function createCURPOSChart() {
+        const CURPOSLabels = createLabels(CURPOSData, 'X'); // Second parameter can be any of the dataset names (it is supposed to be kinda inaccurate)
+        const CURPOSDataset = createDataset(CURPOSData, ['X', 'Y', 'Z']);
+        // Create line chart with dataset for 'CURPOS'
+        createLineChart(CURPOSCanvasId, CURPOSLabels, CURPOSDataset, 'CurrentPosition');
     }
 
     function onFilterButtonClick(motor, chartNo) {
@@ -183,6 +183,11 @@
 
     async function pollServer() {
         const alphabetArray = ['X', 'Y', 'Z'];
+        const systemTime = new Date().getTime();
+        // Shift x-axis labels for MACPOSChart
+        let chart = Chart.getChart(document.getElementById(MACPOSCanvasId).getContext('2d'));
+        chart.data.labels.push(systemTime);
+        chart.data.labels.shift();
         for(var i = 0; i < 3; i++)  {
             const latestRecord = await fetchDataSingular(`MACPOS${i+1}`);
             MACPOSData.shift();
@@ -190,6 +195,10 @@
             shiftLineChartData(MACPOSCanvasId, `Motor ${alphabetArray[i]}`, latestRecord);
             document.getElementById(`latest-${alphabetArray[i]}-chart1`).innerHTML = latestRecord[0].Value;
         }
+        // Shift x-axis labels for MATPOSChart
+        chart = Chart.getChart(document.getElementById(MATPOSCanvasId).getContext('2d'));
+        chart.data.labels.push(systemTime);
+        chart.data.labels.shift();
         for(var i = 0; i < 3; i++)  {
             const latestRecord = await fetchDataSingular(`MATPOS${i+1}`);
             MATPOSData.shift();
@@ -197,6 +206,10 @@
             shiftLineChartData(MATPOSCanvasId, `Motor ${alphabetArray[i]}`, latestRecord);
             document.getElementById(`latest-${alphabetArray[i]}-chart2`).innerHTML = latestRecord[0].Value;
         }
+        // Shift x-axis labels for SCAPOSCanvasId
+        chart = Chart.getChart(document.getElementById(SCAPOSCanvasId).getContext('2d'));
+        chart.data.labels.push(systemTime);
+        chart.data.labels.shift();
         for(var i = 0; i < 3; i++)  {
             const latestRecord = await fetchDataSingular(`SCAPOS${i+1}`);
             SCAPOSData.shift();
@@ -204,6 +217,10 @@
             shiftLineChartData(SCAPOSCanvasId, `Motor ${alphabetArray[i]}`, latestRecord);
             document.getElementById(`latest-${alphabetArray[i]}-chart3`).innerHTML = latestRecord[0].Value;
         }
+        // Shift x-axis labels for CURPOSCanvasId
+        chart = Chart.getChart(document.getElementById(CURPOSCanvasId).getContext('2d'));
+        chart.data.labels.push(systemTime);
+        chart.data.labels.shift();
         for(var i = 0; i < 3; i++)  {
             const latestRecord = await fetchDataSingular(`CurrentPosition${i+1}`);
             CURPOSData.shift();
