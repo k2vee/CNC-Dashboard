@@ -65,25 +65,25 @@
     document.addEventListener('DOMContentLoaded', async () => {
         CurrentData = await fetchDataGroupLimited('Current', 51);
         CurrentData.reverse();
-        createCurrentChart(CurrentData);
+        createCurrentChart();
         MAXCURData = await fetchDataGroupLimited('MAXCUR', 51);
         MAXCURData.reverse();
-        createMaxcurChart(MAXCURData);
+        createMaxcurChart();
         timerId = setInterval(pollServer, 1000);
     });
 
-    function createCurrentChart(data) {
-        const currentLabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        const currentDatasets = createDatasets(CurrentData, ['X', 'Y', 'Z']);
-        // Create line chart with datasets for 'Current'
-        createLineChart(currentCanvasId, currentLabels, currentDatasets, 'Current');
+    function createCurrentChart() {
+        const currentLabels = createLabels(CurrentData, 'X'); // Second parameter can be any of the dataset names (it is supposed to be kinda inaccurate)
+        const currentDataset = createDataset(CurrentData, ['X', 'Y', 'Z']);
+        // Create line chart with dataset for 'Current'
+        createLineChart(currentCanvasId, currentLabels, currentDataset, 'Current');
     }
 
-    function createMaxcurChart(data) {
-        const maxCurlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        const maxCurDatasets = createDatasets(MAXCURData, ['X', 'Y', 'Z']);
-        // Create line chart with datasets for 'MAXCUR'
-        createLineChart(maxCurCanvasId, maxCurlabels, maxCurDatasets, 'MAXCUR');
+    function createMaxcurChart() {
+        const maxCurlabels = createLabels(MAXCURData, 'X'); // Second parameter can be any of the dataset names (it is supposed to be kinda inaccurate)
+        const maxCurDataset = createDataset(MAXCURData, ['X', 'Y', 'Z']);
+        // Create line chart with dataset for 'MAXCUR'
+        createLineChart(maxCurCanvasId, maxCurlabels, maxCurDataset, 'MAXCUR');
     }
 
     function onFilterButtonClick(motor, chartNo) {
@@ -103,6 +103,11 @@
 
     async function pollServer() {
         const alphabetArray = ['X', 'Y', 'Z'];
+        const systemTime = new Date().getTime();
+        // Shift x-axis labels for currentChart
+        let chart = Chart.getChart(document.getElementById(currentCanvasId).getContext('2d'));
+        chart.data.labels.push(systemTime);
+        chart.data.labels.shift();
         for(var i = 0; i < 3; i++)  {
             const latestRecord = await fetchDataSingular(`Current${i+1}`);
             CurrentData.shift();
@@ -110,6 +115,10 @@
             shiftLineChartData(currentCanvasId, `${alphabetArray[i]}`, latestRecord);
             document.getElementById(`latest-${alphabetArray[i]}-chart1`).innerHTML = latestRecord[0].Value;
         }
+        // Shift x-axis labels for maxCurChart
+        chart = Chart.getChart(document.getElementById(maxCurCanvasId).getContext('2d'));
+        chart.data.labels.push(systemTime);
+        chart.data.labels.shift();
         for(var i = 0; i < 3; i++)  {
             const latestRecord = await fetchDataSingular(`MAXCUR2${i+1}`);
             MAXCURData.shift();

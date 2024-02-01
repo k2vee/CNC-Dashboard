@@ -42,9 +42,19 @@ async function fetchDataTable(nodeId)   {
     }
 }
 
+function createLabels(data, motor) {
+    const motorData = data.filter(row => {
+        const isMotor = isMotorNodeId(row.NodeId, motor);
+        //console.log(`Checking NodeId ${row.NodeId} for Motor ${motor}: ${isMotor}`);
+        return isMotor;
+    });
+    const labels = Array.from(motorData, (row) => row.ServerTimeStamp);
+    return labels;
+}
+
 // -- Chart functions --
 // C: Creates ??datasets??
-function createDatasets(data, motors) {
+function createDataset(data, motors) {
     const datasets = [];
     const colors = {
         X: '#FFC3A0', // Soft green-blue
@@ -103,10 +113,28 @@ function createLineChart(canvasId, labels, datasets, chartTitle) {
         options: {
             scales: {
                 x: {
-                    type: 'linear',
+                    type: 'timeseries',
+                    title: { 
+                        display: 'true',
+                        align: 'center',
+                        text: 'Time (mm:ss)',
+                        color: 'white',
+                        padding: 8,
+                        font:   {
+                            size: 13
+                        }
+                    },
                     position: 'bottom',
                     ticks: {
-                        color: 'white', // Set x-axis label color
+                        maxTicksLimit: 11,
+                        source: 'auto',
+                        color: 'white'
+                    },
+                    time:   {
+                        unit: 'second',
+                        displayFormats: {
+                            second: 'mm:ss'
+                        }
                     }
                 },
                 y: {
@@ -150,9 +178,8 @@ function shiftLineChartData(canvasId, label, newData) {
     // if match occurs with 'label, push data into dataset
     for(var i = 0; i < chart.data.datasets.length; i++) {
         if(chart.data.datasets[i].label.includes(label))    {
+            chart.data.datasets[i].data.shift();
             chart.data.datasets[i].data.push(newData[0].Value);
-            if(chart.data.datasets[i].data.length >= 52)
-                chart.data.datasets[i].data.shift();
             break;
         }
     }

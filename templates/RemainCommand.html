@@ -39,16 +39,16 @@
     document.addEventListener('DOMContentLoaded', async () => {
         RemComData = await fetchDataGroupLimited('RemainCommand', 51);
         RemComData.reverse();
-        createRemComChart(RemComData);
+        createRemComChart();
         timerId = setInterval(pollServer, 1000);
     });
 
     // Function to update the 'Remain Command' line chart
-    function createRemComChart(data) {
-        const RemComLabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        const RemComDatasets = createDatasets(RemComData, ['X', 'Y', 'Z']);
-        // Create line chart with datasets for 'Current'
-        createLineChart(RemComCanvasId, RemComLabels, RemComDatasets, 'Remain Command');
+    function createRemComChart() {
+        const RemComLabels = createLabels(RemComData, 'X'); // Second parameter can be any of the dataset names (it is supposed to be kinda inaccurate)
+        const RemComDataset = createDataset(RemComData, ['X', 'Y', 'Z']);
+        // Create line chart with dataset for 'Current'
+        createLineChart(RemComCanvasId, RemComLabels, RemComDataset, 'Remain Command');
     }
 
     function onFilterButtonClick(motor, chartNo) {
@@ -59,6 +59,11 @@
 
     async function pollServer() {
         const alphabetArray = ['X', 'Y', 'Z'];
+        const systemTime = new Date().getTime();
+        // Shift x-axis labels for RemComChart
+        let chart = Chart.getChart(document.getElementById(RemComCanvasId).getContext('2d'));
+        chart.data.labels.push(systemTime);
+        chart.data.labels.shift();
         for(var i = 0; i < 3; i++)  {
             const latestRecord = await fetchDataSingular(`RemainCommand${i+1}`);
             RemComData.shift();

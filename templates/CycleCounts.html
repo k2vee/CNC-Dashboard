@@ -53,27 +53,27 @@
     document.addEventListener('DOMContentLoaded', async () => {
         CYCCNTData = await fetchDataGroupLimited('CYCCNT', 51);
         CYCCNTData.reverse();
-        createCYCCNTCharts(CYCCNTData);
+        createCYCCNTCharts();
         CycleCountData = await fetchDataGroupLimited('CycleCount', 51);
         CycleCountData.reverse();
-        createCycleCountCharts(CycleCountData);
+        createCycleCountCharts();
         timerId = setInterval(pollServer, 1000);
     });
 
     // Function to update the 'CYCCNT' line chart
-    function createCYCCNTCharts(data) {
-        const cyccntLabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        const cyccntDatasets = createDatasets(CYCCNTData, ['X', 'Y', 'Z']);
-        // Create line chart with datasets for 'CYCCNT'
+    function createCYCCNTCharts() {
+        const cyccntLabels = createLabels(CYCCNTData, 'X'); // Second parameter can be any of the dataset names (it is supposed to be kinda inaccurate)
+        const cyccntDatasets = createDataset(CYCCNTData, ['X', 'Y', 'Z']);
+        // Create line chart with dataset for 'CYCCNT'
         createLineChart(cycleCountsCanvasId, cyccntLabels, cyccntDatasets, 'CYCCNT');
     }
 
     // Function to update the 'SpindleCount' line chart
-    function createCycleCountCharts(data) {
-        const cycleCountlabels = Array.from({ length: 51 }, (_, i) => i); // Sequential x-axis values
-        const cycleCountDatasets = createDatasets(CycleCountData, ['Spindle']);
-        // Create line chart with datasets for 'CycleCount'
-        createLineChart(cycleCountsSpindleCanvasId, cycleCountlabels, cycleCountDatasets, 'CycleCount');
+    function createCycleCountCharts() {
+        const cycleCountLabels = createLabels(CycleCountData, 'Spindle'); // Second parameter can be any of the dataset names (it is supposed to be kinda inaccurate)
+        const cycleCountDataset = createDataset(CycleCountData, ['Spindle']);
+        // Create line chart with dataset for 'CycleCount'
+        createLineChart(cycleCountsSpindleCanvasId, cycleCountLabels, cycleCountDataset, 'CycleCount');
     }
 
     function onFilterButtonClick(motor, chartNo) {
@@ -93,6 +93,11 @@
 
     async function pollServer() {
         const alphabetArray = ['X', 'Y', 'Z', 'Spindle'];
+        const systemTime = new Date().getTime();
+        // Shift x-axis labels for cycleCountsChart
+        let chart = Chart.getChart(document.getElementById(cycleCountsCanvasId).getContext('2d'));
+        chart.data.labels.push(systemTime);
+        chart.data.labels.shift();
         for(var i = 0; i < 3; i++)  {
             const latestRecord = await fetchDataSingular(`CYCCNT${i+1}`);
             CYCCNTData.shift();
@@ -100,6 +105,10 @@
             shiftLineChartData(cycleCountsCanvasId, `${alphabetArray[i]}`, latestRecord);
             document.getElementById(`latest-${alphabetArray[i]}-chart1`).innerHTML = latestRecord[0].Value;
         }
+        // Shift x-axis labels for cycleCountsSpindleChart
+        chart = Chart.getChart(document.getElementById(cycleCountsSpindleCanvasId).getContext('2d'));
+        chart.data.labels.push(systemTime);
+        chart.data.labels.shift();
         for(var i = 0; i < 1; i++)  {
             const latestRecord = await fetchDataSingular(`CycleCount${i+1}`);
             CycleCountData.shift();
